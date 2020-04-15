@@ -41,26 +41,28 @@ defmodule Ecstatic.Entity do
   end
 
   @doc "Creates a new entity"
-  @spec new(components) :: t
+  @spec new([Ecstatic.Component.t()]) :: t
   def new(components) when is_list(components) do
     entity = %Entity{id: id()}
     Ecstatic.EventConsumer.start_link(entity)
     {init, non_init} = Enum.split_with(components, fn
       %Component{} -> true
-      _ -> false
+                  _ -> false
     end)
     build(entity, Enum.concat(init, non_init))
-    Store.Ets.save_entity(entity)
+    {:ok, %Entity{} = entity} = Store.Ets.save_entity(entity)
+    entity
   end
 
-  defp build(entity, components) do
+  @spec build(t(), [Component.t()]) :: t()
+  defp build(%Entity{} = entity, components) do
     changes = %Changes{attached: components}
 
     initialized_components = new_list_of_components(entity, changes)
 
     EventSource.push({entity, %Changes{attached: initialized_components}})
 
-    %{entity | components: components}
+    %Entity{entity | components: components}
   end
 
   @doc "Add an initialized component to an entity"
@@ -90,17 +92,18 @@ defmodule Ecstatic.Entity do
     Enum.find(entity.components, &(&1.type == component))
   end
 
-  @spec apply_changes(t, Changes.t()) :: t
+  @spec apply_changes(t(), Changes.t()) :: t()
   def apply_changes(entity, changes) do
     new_comps = new_list_of_components(entity, changes)
 
-    new_entity = %{entity | components: new_comps}
+    new_entity = %Entity{entity | components: new_comps}
     Store.Ets.save_entity(new_entity)
     new_entity
   end
 
   defp id, do: Ecstatic.ID.new()
 
+  @spec new_list_of_components(t(), Changes.t()) :: [Component.t()]
   defp new_list_of_components(
          entity,
          %Changes{attached: attached, updated: updated, removed: removed}
@@ -112,6 +115,7 @@ defmodule Ecstatic.Entity do
       end)
 
     updated
+    |> Enum.map(fn {_old,new} -> new end) ##updated now is a tupple
     |> Enum.concat(entity.components)
     |> Enum.uniq_by(& &1.id)
     |> Enum.concat(comps_to_attach)

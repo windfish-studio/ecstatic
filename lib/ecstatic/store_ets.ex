@@ -1,6 +1,7 @@
 defmodule Ecstatic.Store.Ets do
   @behaviour Ecstatic.Store
   use GenServer
+  alias Ecstatic.Entity
 
   def start_link(opts \\ %{}) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
@@ -11,8 +12,10 @@ defmodule Ecstatic.Store.Ets do
     {:ok, opts}
   end
 
+  @spec save_entity(Entity.t()) :: {:ok, Entity.t()}
   def save_entity(entity) do
-    GenServer.call(__MODULE__, {:save_entity, entity})
+    {:ok, %Entity{}} = result = GenServer.call(__MODULE__, {:save_entity, entity})
+    result
   end
 
   def delete_entity(id) do

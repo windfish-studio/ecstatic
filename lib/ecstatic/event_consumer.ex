@@ -3,7 +3,7 @@ defmodule Ecstatic.EventConsumer do
   use GenStage
   require Logger
 
-  alias Ecstatic.Entity
+  alias Ecstatic.{Entity, Changes}
 
   def start_link(entity) do
     GenStage.start_link(__MODULE__, entity)
@@ -32,7 +32,8 @@ defmodule Ecstatic.EventConsumer do
 
   # I can do [event] because I only ever ask for one.
   # event => {entity, %{changed: [], new: [], deleted: []}}
-  def handle_events([{entity, changes} = _event], _from, %{watchers: watchers} = state) do
+
+  def handle_events([{entity, %Changes{} = changes} = _event], _from, %{watchers: watchers} = state) do
     Logger.debug(Kernel.inspect(changes, pretty: true))
     watcher_should_trigger = watcher_should_trigger?(entity, changes)
     change_contains_component = change_contains_component?(changes)
@@ -42,7 +43,7 @@ defmodule Ecstatic.EventConsumer do
       |> Enum.filter(change_contains_component)
       |> Enum.filter(watcher_should_trigger)
 
-    new_entity = Entity.apply_changes(entity, changes)
+    new_entity = Entity.apply_changes(entity, changes) #fix this type
 
     #used for testing
     case Application.get_env(:ecstatic, :debug_pid, nil) do 
@@ -64,10 +65,7 @@ defmodule Ecstatic.EventConsumer do
                 :continuous -> send(state.ticker, {:tick, comp.id, new_entity.id, w.system})
                 t when is_number(t) -> 
                   Process.send_after(
-                    state.ticker, 
-                    {:tick, comp.id, new_entity.id, w.system}, 
-                    t
-                  )
+                    state.ticker,                 {:tick, comp.id, new_entity.id, w.system}, t)
               end
             :attached -> send(state.ticker, {:start_tick, comp.id, new_entity.id, w.system, opts})
             :removed -> send(state.ticker, {:stop_tick, comp.id})
