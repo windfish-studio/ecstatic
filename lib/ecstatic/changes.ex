@@ -5,6 +5,7 @@ defmodule Ecstatic.Changes do
 
   @type attached_component :: atom() | Ecstatic.Component.t()
 
+  ## updated has the new and the old component
   @type t :: %Ecstatic.Changes{
           attached: [attached_component],
           updated: [{Ecstatic.Component.t(), Ecstatic.Component.t()}],
