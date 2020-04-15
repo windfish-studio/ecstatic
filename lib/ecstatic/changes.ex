@@ -7,7 +7,7 @@ defmodule Ecstatic.Changes do
 
   @type t :: %Ecstatic.Changes{
           attached: [attached_component],
-          updated: [Ecstatic.Component.t()],
+          updated: [{Ecstatic.Component.t(), Ecstatic.Component.t()}],
           removed: [atom()]
         }
 end
