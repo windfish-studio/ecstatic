@@ -45,7 +45,7 @@ defmodule Ecstatic.Entity do
   def new(components) when is_list(components) do
     entity = %Entity{id: id()}
     Ecstatic.EventConsumer.start_link(entity)
-    {init, non_init} = components = Enum.split_with(components, fn
+    {init, non_init} = Enum.split_with(components, fn
       %Component{} -> true
       _ -> false
     end)
@@ -111,12 +111,11 @@ defmodule Ecstatic.Entity do
         c when is_atom(c) -> c.new
       end)
 
-    new_comps =
-      updated
-      |> Enum.concat(entity.components)
-      |> Enum.uniq_by(& &1.id)
-      |> Enum.concat(comps_to_attach)
-      |> Enum.uniq_by(& &1.type)
-      |> Enum.reject(&Enum.member?(removed, &1.type))
+    updated
+    |> Enum.concat(entity.components)
+    |> Enum.uniq_by(& &1.id)
+    |> Enum.concat(comps_to_attach)
+    |> Enum.uniq_by(& &1.type)
+    |> Enum.reject(&Enum.member?(removed, &1.type))
   end
 end

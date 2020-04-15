@@ -32,8 +32,8 @@ defmodule Ecstatic.EventConsumer do
 
   # I can do [event] because I only ever ask for one.
   # event => {entity, %{changed: [], new: [], deleted: []}}
-  def handle_events([{entity, changes} = _event], _from, %{ticker: ticker_pid, watchers: watchers} = state) do
-    Logger.info(Kernel.inspect(changes, pretty: true))
+  def handle_events([{entity, changes} = _event], _from, %{watchers: watchers} = state) do
+    Logger.debug(Kernel.inspect(changes, pretty: true))
     watcher_should_trigger = watcher_should_trigger?(entity, changes)
     change_contains_component = change_contains_component?(changes)
 
@@ -43,6 +43,12 @@ defmodule Ecstatic.EventConsumer do
       |> Enum.filter(watcher_should_trigger)
 
     new_entity = Entity.apply_changes(entity, changes)
+
+    #used for testing
+    case Application.get_env(:ecstatic, :debug_pid, nil) do 
+      p when is_pid(p) -> send(p, {:debug, new_entity, changes})
+      _ -> :noop
+    end
 
     Enum.each(watchers_to_use, fn w ->
       case Map.get(w, :ticker, nil) do
