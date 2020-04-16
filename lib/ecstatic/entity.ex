@@ -91,7 +91,7 @@ defmodule Ecstatic.Entity do
     Enum.find(entity.components, &(&1.type == component))
   end
 
-  @spec apply_changes(t(), NewChanges.t()) :: t()
+  @spec apply_changes(t(), Changes.t()) :: t()
   def apply_changes(entity, new_changes) do
     new_comps = new_list_of_components(entity, new_changes)
     new_entity = %Entity{entity | components: new_comps}
@@ -101,10 +101,10 @@ defmodule Ecstatic.Entity do
 
   defp id, do: Ecstatic.ID.new()
 
-  @spec new_list_of_components(t(), NewChanges.t()) :: [Component.t()]
+  @spec new_list_of_components(t(), Changes.t()) :: [Component.t()]
   defp new_list_of_components(
          entity,
-         %NewChanges{attached: attached, updated: updated, removed: removed}
+         %Changes{attached: attached, updated: updated, removed: removed}
        ) do
     comps_to_attach =
       Enum.map(attached, fn
