@@ -113,7 +113,12 @@ defmodule Ecstatic.Entity do
       end)
 
     updated
-    |> Enum.map(fn {_old,new} -> new end) ##updated now is a tupple
+    |> Enum.map(fn upd ->
+                  case upd do
+                     {_old,new} -> new
+                     new -> new
+                  end
+                end) ##updated now is a tupple
     |> Enum.concat(entity.components)
     |> Enum.uniq_by(& &1.id)
     |> Enum.concat(comps_to_attach)

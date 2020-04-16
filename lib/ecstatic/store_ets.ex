@@ -12,7 +12,7 @@ defmodule Ecstatic.Store.Ets do
     {:ok, opts}
   end
 
-  @spec save_entity(Entity.t()) :: {:ok, Entity.t()}
+  @spec save_entity(Entity.t()) :: Entity.t()
   def save_entity(entity) do
     GenServer.call(__MODULE__, {:save_entity, entity})
   end
@@ -23,7 +23,6 @@ defmodule Ecstatic.Store.Ets do
 
   def get_entity(id) do
     [[entity]] = monitor = :ets.match(__MODULE__, {{:entity, id}, :"$1"})
-    IO.inspect({"get_entity: ", monitor})
     entity
   end
 
