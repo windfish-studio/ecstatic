@@ -50,8 +50,7 @@ defmodule Ecstatic.Entity do
                   _ -> false
     end)
     build(entity, Enum.concat(init, non_init))
-    {:ok, %Entity{} = entity} = Store.Ets.save_entity(entity)
-    entity
+    Store.Ets.save_entity(entity)
   end
 
   @spec build(t(), [Component.t()]) :: t()
