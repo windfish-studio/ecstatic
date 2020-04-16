@@ -24,7 +24,7 @@ defmodule Ecstatic.Store.Ets do
 
   def get_entity(id) do
     [[entity]] = :ets.match(__MODULE__, {{:entity, id}, :"$1"})
-    {:ok, entity}
+    entity
   end
 
   def handle_call({:save_entity, entity}, _from, state) do
