@@ -91,10 +91,9 @@ defmodule Ecstatic.Entity do
     Enum.find(entity.components, &(&1.type == component))
   end
 
-  @spec apply_changes(t(), Changes.t()) :: t()
-  def apply_changes(entity, changes) do
-    new_comps = new_list_of_components(entity, changes)
-
+  @spec apply_changes(t(), NewChanges.t()) :: t()
+  def apply_changes(entity, new_changes) do
+    new_comps = new_list_of_components(entity, new_changes)
     new_entity = %Entity{entity | components: new_comps}
     Store.Ets.save_entity(new_entity)
     new_entity
@@ -102,10 +101,10 @@ defmodule Ecstatic.Entity do
 
   defp id, do: Ecstatic.ID.new()
 
-  @spec new_list_of_components(t(), Changes.t()) :: [Component.t()]
+  @spec new_list_of_components(t(), NewChanges.t()) :: [Component.t()]
   defp new_list_of_components(
          entity,
-         %Changes{attached: attached, updated: updated, removed: removed}
+         %NewChanges{attached: attached, updated: updated, removed: removed}
        ) do
     comps_to_attach =
       Enum.map(attached, fn
@@ -114,7 +113,7 @@ defmodule Ecstatic.Entity do
       end)
 
     updated
-    |> Enum.map(fn {_old,new} -> new end) ##updated now is a tupple
+#    |> Enum.map(fn {_old,new} -> new end) ##updated now is a tupple
     |> Enum.concat(entity.components)
     |> Enum.uniq_by(& &1.id)
     |> Enum.concat(comps_to_attach)
