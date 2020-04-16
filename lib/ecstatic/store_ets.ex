@@ -14,8 +14,7 @@ defmodule Ecstatic.Store.Ets do
 
   @spec save_entity(Entity.t()) :: {:ok, Entity.t()}
   def save_entity(entity) do
-    {:ok, %Entity{}} = result = GenServer.call(__MODULE__, {:save_entity, entity})
-    result
+    GenServer.call(__MODULE__, {:save_entity, entity})
   end
 
   def delete_entity(id) do
@@ -29,7 +28,7 @@ defmodule Ecstatic.Store.Ets do
 
   def handle_call({:save_entity, entity}, _from, state) do
     :ets.insert(__MODULE__, {{:entity, entity.id}, entity})
-    {:reply, {:ok, entity}, state}
+    {:reply, entity, state}
   end
 
   def handle_cast({:delete_entity, id}, state) do
