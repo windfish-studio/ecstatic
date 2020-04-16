@@ -22,7 +22,8 @@ defmodule Ecstatic.Store.Ets do
   end
 
   def get_entity(id) do
-    [[entity]] = :ets.match(__MODULE__, {{:entity, id}, :"$1"})
+    [[entity]] = monitor = :ets.match(__MODULE__, {{:entity, id}, :"$1"})
+    IO.inspect({"get_entity: ", monitor})
     entity
   end
 
