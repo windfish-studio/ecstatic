@@ -91,6 +91,4 @@ defmodule EntityTest do
     TestHelper.wait_receiver()
     assert entity.components == [new_component]
   end
-
-
 end
