@@ -111,7 +111,6 @@ defmodule Ecstatic.Entity do
         %Component{} = c -> c
         c when is_atom(c) -> c.new
       end)
-
     updated
     |> Enum.map(fn upd ->
                   case upd do

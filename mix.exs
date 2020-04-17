@@ -1,3 +1,6 @@
+
+
+
 defmodule Ecstatic.Mixfile do
   use Mix.Project
 
@@ -11,7 +14,13 @@ defmodule Ecstatic.Mixfile do
       name: "Ecstatic",
       deps: deps(),
       package: package(),
-      docs: docs()
+      docs: docs(),
+      elixirc_paths:
+       if Mix.env() == :test do
+        ["lib", "test/lib"]
+       else
+        ["lib"]
+       end
     ]
   end
 
@@ -44,4 +53,5 @@ defmodule Ecstatic.Mixfile do
       {:dialyxir, "~> 1.0-pre4", only: [:dev], runtime: false}
     ]
   end
+
 end

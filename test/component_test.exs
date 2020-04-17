@@ -1,15 +1,19 @@
 defmodule ComponentTest do
   use ExUnit.Case
 
-  alias TestEcs.TestingComponent
+  alias Test.TestingComponent
   alias Ecstatic.Component
 
   @moduletag :capture_log
 
-  doctest TestingComponent
+  doctest Component
 
   test "module exists" do
     assert is_list(TestingComponent.module_info())
+  end
+
+  test "module exists basic" do
+    assert is_list(Component.module_info())
   end
 
   test "create default component" do

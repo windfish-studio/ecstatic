@@ -12,7 +12,7 @@ defmodule Ecstatic.EventConsumer do
   def init(entity) do
     {:ok, ticker_pid} = Ecstatic.Ticker.start_link()
     state = %{
-      watchers: Application.get_env(:ecstatic, :watchers).(),
+      watchers: Application.get_env(:ecstatic, :watchers, fn -> [] end).(),
       entity_id: entity.id,
       ticker: ticker_pid
     }

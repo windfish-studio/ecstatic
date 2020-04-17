@@ -11,4 +11,12 @@ defmodule TestHelper do
     String.length(string) == 32 &&
     String.match?(string,~r/^[[:xdigit:][:lower:]]+$/)
   end
+
+  def wait_receiver() do
+    receive do
+      {:debug, _new, _} -> wait_receiver()
+    after
+      10 -> :time_out
+    end
+  end
 end
