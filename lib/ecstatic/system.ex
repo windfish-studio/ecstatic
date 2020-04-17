@@ -34,23 +34,20 @@ defmodule Ecstatic.System do
       def do_process(entity, function) do
         event =
           if Entity.match_aspect?(entity, aspect()) do
-            changes = function.()
-            changes = filter_changes(entity,changes)
-            {entity, changes}
+            merge_changes(entity,function.())
           else
             {entity, %Changes{}}  #lets combine old and new
           end
         EventSource.push(event)
       end
 
-      defp filter_changes(entity, new_changes) do
-        changes = Enum.map(new_changes.updated, fn new_c ->
-                                          Enum.map(entity.components, fn old_c ->
-                                              if old_c.id == new_c.id do
-                                                {old_c, new_c}
-                                              end
-                                            end)
-                                          end)
+      defp merge_changes(entity, new_changes) do
+        changes = Enum.map(new_changes.updated,
+          fn new_c ->
+            old_c = Enum.find(entity.components,
+                fn old_c -> old_c.id == new_c.id end)
+            {old_c, new_c}
+          end)
         changes = %Changes{updated: changes}
         {entity, changes}
       end
