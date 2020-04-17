@@ -1,7 +1,7 @@
 defmodule EntityTest do
   use ExUnit.Case
 
-  alias Ecstatic.{Entity, Component, Aspect}
+  alias Ecstatic.{Entity, Component, Aspect, Changes}
   alias Test.{TestingEntity,TestingComponent}
   alias TestHelper
 
@@ -71,6 +71,25 @@ defmodule EntityTest do
     TestHelper.wait_receiver()
     entity = Ecstatic.Store.Ets.get_entity(entity.id)
     assert Entity.has_component?(entity,TestingComponent)
+  end
+
+  test "find component" do
+    component = TestingComponent.new()
+    entity = TestingEntity.new([component])
+    assert Entity.find_component(entity,TestingComponent) == nil
+    TestHelper.wait_receiver()
+    entity = Ecstatic.Store.Ets.get_entity(entity.id)
+    assert Entity.find_component(entity,TestingComponent) == component
+  end
+
+  test "apply_changes" do
+    component = TestingComponent.new()
+    entity = TestingEntity.new([component])
+    new_state = %{component.state | var: 42}
+    new_component = %{component | state: new_state}
+    entity = Entity.apply_changes(entity, %Changes{updated: [{component,new_component}]})
+    TestHelper.wait_receiver()
+    assert entity.components == [new_component]
   end
 
 
