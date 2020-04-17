@@ -1,5 +1,7 @@
 ExUnit.start()
 defmodule TestHelper do
+
+  #UUID.info does the same. Replace usages by this one
   def ecs_id?(string) do
     bool = String.length(string) == 36 &&
     String.at(string,8) == "-" &&
@@ -16,7 +18,13 @@ defmodule TestHelper do
     receive do
       {:debug, _new, _} -> wait_receiver()
     after
-      10 -> :time_out
+      50 -> :time_out
     end
+  end
+
+  def initialize() do
+    entity = Test.TestingEntity.new([Test.TestingComponent.new()])
+    wait_receiver()
+    {entity.id,nil}
   end
 end

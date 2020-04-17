@@ -24,7 +24,7 @@ defmodule Ecstatic.Ticker do
         when t_left == :infinity 
         when (is_number(t_left) and t_left > 0) ->
 
-          {:ok, entity} = Ecstatic.Store.Ets.get_entity(e_id)
+          entity = Ecstatic.Store.Ets.get_entity(e_id)
           system.process(entity)
 
           case t_left do 

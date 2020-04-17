@@ -54,6 +54,10 @@ defmodule EntityTest do
     assert entity.components == [component]
   end
 
+  test "remove component" do
+    assert false
+  end
+
   test "match aspect" do
     aspect = Aspect.new(with: [TestingComponent], without: [])
     assert aspect == %Aspect{with: [TestingComponent], without: []} #TODO: move this assert to aspectTest

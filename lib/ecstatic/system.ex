@@ -31,7 +31,7 @@ defmodule Ecstatic.System do
       end
 
       @spec do_process(Entity.t(), dispatch_fun()) :: event_push()
-      def do_process(entity, function) do
+      defp do_process(entity, function) do
         event =
           if Entity.match_aspect?(entity, aspect()) do
             merge_changes(entity,function.())
