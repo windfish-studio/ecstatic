@@ -16,17 +16,15 @@ defmodule Ecstatic.System do
               | (Entity.t(), Changes.t() -> Changes.t())
       @type event_push :: :ok
 
-      def process(entity, changes \\ nil)
-
       @spec process(entity :: Entity.t(), nil) :: event_push()
-      def process(entity, nil) do
-        function = fn -> dispatch(entity) end
+      def process(entity, nil, delta) do
+        function = fn -> dispatch(entity, nil, delta) end
         do_process(entity, function)
       end
 
       @spec process(entity :: Entity.t(), changes :: Changes.t()) :: event_push()
-      def process(entity, changes) do
-        function = fn -> dispatch(entity, changes) end
+      def process(entity, changes, delta) do
+        function = fn -> dispatch(entity, changes, delta) end
         do_process(entity, function)
       end
 

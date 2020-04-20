@@ -8,14 +8,20 @@ defmodule Test.TestingSystem do
     Ecstatic.Aspect.new(with: [], without: [])
   end
   #non-reactive
-  def dispatch(entity) do
+  def dispatch(entity, nil, delta) do
     pid = Application.get_env(:ecstatic, :test_pid)
     send pid, "hello world"
-#    c = Entity.find_component(entity, TestingComponent)
-    %Changes{updated: [Test.TestingComponent.new()]}
+    c = Entity.find_component(entity, TestingComponent)
+
+    %Changes{updated: [c]}
   end
   #reactive
-  def dispatch(entity,changes) do
+  def dispatch(entity,changes,delta) do
     nil
   end
+
+  def process(_,_) do
+    :ok
+  end
+
 end

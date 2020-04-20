@@ -3,11 +3,15 @@ defmodule Ecstatic.NullSystem do
   use Ecstatic.System
   def aspect, do: %Aspect{}
 
-  def dispatch(_entity) do
+  def dispatch(_entity, nil, _delta) do
     %Changes{}
   end
 
-  def dispatch(_entity, _changes) do
+  def dispatch(_entity, _changes, _delta) do
     %Changes{}
+  end
+
+  def process(_,_) do
+    :ok
   end
 end

@@ -15,10 +15,13 @@ defmodule TestHelper do
   end
 
   def wait_receiver() do
+    wait_receiver(1000)
+  end
+  def wait_receiver(timeout_time_milisec) do
     receive do
-      {:debug, _new, _} -> wait_receiver()
+      {:debug, _new, _} -> wait_receiver(timeout_time_milisec)
     after
-      50 -> :time_out
+      timeout_time_milisec -> :time_out
     end
   end
 

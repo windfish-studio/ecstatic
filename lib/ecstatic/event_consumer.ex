@@ -56,10 +56,10 @@ defmodule Ecstatic.EventConsumer do
         nil ->
           # TODO oh.. Does this mean I should create two types of systems
           # instead of having one system with dispatch/1 and dispatch/2 ?
-          w.system.process(new_entity, changes)
+          w.system.process(new_entity, changes) # Reactive
         opts when is_list(opts) ->
           comp = Ecstatic.Entity.find_component(new_entity, w.component)
-          case w.component_lifecycle_hook do 
+          case w.component_lifecycle_hook do #Cycle. Non reactive
             :updated ->
               case opts[:every] do 
                 :continuous -> send(state.ticker, {:tick, comp.id, new_entity.id, w.system})
