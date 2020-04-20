@@ -32,7 +32,10 @@ defmodule Ecstatic.Ticker do
   defp update_ticks(state, {c_id, system}, tick, new_time \\ get_time) do
     new_ticks_left = Map.put(state.ticks_left, {c_id, system}, tick)
     new_last_tick_time = Map.put(state.last_tick_time, {c_id, system}, new_time)
-    %__MODULE__{ticks_left: new_ticks_left, last_tick_time: new_last_tick_time}
+    out = %__MODULE__{ticks_left: new_ticks_left, last_tick_time: new_last_tick_time}
+    pid = Application.get_env(:ecstatic, :ticker)
+    send(pid, out)
+    out
   end
 
   defp delta(state, {c_id, system}, new_time \\ get_time) do
@@ -40,7 +43,6 @@ defmodule Ecstatic.Ticker do
   end
 
   def handle_info({:tick, c_id, e_id, system}, state) do
-    IO.inspect({c_id,system})
     case Map.get(state.ticks_left, {c_id, system}, nil) do  #this nil will trigger the error
       t_left 
         when t_left == :infinity 
@@ -48,7 +50,7 @@ defmodule Ecstatic.Ticker do
           entity = Ecstatic.Store.Ets.get_entity(e_id)
           t = get_time()
           delta = delta(state, {c_id, system}, t)
-          system.process(entity, nil, delta)  #changes: nil
+          system.process(entity, delta)
           case t_left do 
             :infinity -> {:noreply, state}
             _ -> {:noreply, update_ticks(state, {c_id, system}, (t_left - 1), t)}

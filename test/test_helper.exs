@@ -15,7 +15,7 @@ defmodule TestHelper do
   end
 
   def wait_receiver() do
-    wait_receiver(1000)
+    wait_receiver(100)
   end
   def wait_receiver(timeout_time_milisec) do
     receive do

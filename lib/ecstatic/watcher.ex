@@ -26,7 +26,6 @@ defmodule Ecstatic.Watcher do
     end
   end
 
-
   defguard is_tick(ticks) when (is_number(ticks) and ticks > 0) or ticks == :infinity
   defguard is_interval(interval) when (is_number(interval) and interval > 0) or interval == :continuous
 
@@ -86,6 +85,4 @@ defmodule Ecstatic.Watcher do
   defmacro run(system, :continuous), do: run_ticker(system, [every: :continuous, for: :infinity])
   defmacro run(system, [every: interval]), do: run_ticker(system, [every: interval, for: :infinity])
   defmacro run(system, [every: interval, for: ticks]), do: run_ticker(system, [every: interval, for: ticks])
-
 end
-

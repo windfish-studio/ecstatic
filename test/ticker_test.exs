@@ -1,15 +1,14 @@
 defmodule TickerTest do
   use ExUnit.Case
-
-  alias Ticker
+  alias Test.TestingWatcher
+  alias Ecstatic.Ticker
 
   @moduletag :capture_log
 
   doctest Ticker
 
   setup do
-    Application.put_env(:ecstatic, :watchers, fn() -> TestingWatcher.watchers end)
-    Application.put_env(:ecstatic, :test_pid, self())
+    Application.put_env(:ecstatic, :ticker, fn() -> Ticker.last_tick_time end)
     {:ok, _pid} = Ecstatic.Supervisor.start_link([])
     TestHelper.initialize()
     :ok
@@ -20,8 +19,12 @@ defmodule TickerTest do
   end
 
   test "1 sec watcher" do
-    t = Ticker.last_tick_time
-    TestHelper.wait_receiver(1200)
-    assert Ticker.last_tick_time
+    message = receive do
+      message -> message
+    after
+      1000 -> :timeout
+    end
+    assert message == "hello world"
+    assert_receive "hello world"
   end
 end

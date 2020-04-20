@@ -17,8 +17,8 @@ defmodule Ecstatic.System do
       @type event_push :: :ok
 
       @spec process(entity :: Entity.t(), nil) :: event_push()
-      def process(entity, nil, delta) do
-        function = fn -> dispatch(entity, nil, delta) end
+      def process(entity, delta) do
+        function = fn -> dispatch(entity, delta) end
         do_process(entity, function)
       end
 
