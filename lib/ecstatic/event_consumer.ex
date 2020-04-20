@@ -80,7 +80,13 @@ defmodule Ecstatic.EventConsumer do
     fn watcher ->
       changes
       |> Map.get(watcher.component_lifecycle_hook)
-      |> Enum.map(& &1.type)
+      |> Enum.map(fn change ->
+                  change = case change do
+                    {_old, new} -> new
+                    new -> new
+                  end
+                  change.type
+                  end)
       |> Enum.member?(watcher.component)
     end
   end
