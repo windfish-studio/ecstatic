@@ -8,7 +8,9 @@ defmodule TickerTest do
   doctest Ticker
 
   setup do
-    Application.put_env(:ecstatic, :ticker, fn() -> Ticker.last_tick_time end)
+    Application.put_env(:ecstatic, :ticker, fn() -> end)
+    Application.put_env(:ecstatic, :watchers, fn() -> TestingWatcher.watchers end)
+    Application.put_env(:ecstatic, :test_pid, self())
     {:ok, _pid} = Ecstatic.Supervisor.start_link([])
     TestHelper.initialize()
     :ok
