@@ -12,7 +12,7 @@ defmodule Ecstatic.EventConsumer do
   def init(entity) do
     {:ok, ticker_pid} = Ecstatic.Ticker.start_link()
     state = %{
-      watchers: Application.get_env(:ecstatic, :watchers, fn -> [] end).(),
+      watchers: Application.get_env(:ecstatic, :watchers, fn -> [] end).(), #how can i receive the watchers?
       entity_id: entity.id,
       ticker: ticker_pid
     }
@@ -44,12 +44,6 @@ defmodule Ecstatic.EventConsumer do
       |> Enum.filter(watcher_should_trigger)
 
     new_entity = Entity.apply_changes(entity, changes) #fix this type
-
-    #used for testing
-    case Application.get_env(:ecstatic, :debug_pid, nil) do 
-      p when is_pid(p) -> send(p, {:debug, new_entity, changes})
-      _ -> :noop
-    end
 
     Enum.each(watchers_to_use, fn w ->
       case Map.get(w, :ticker, nil) do

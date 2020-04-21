@@ -1,5 +1,5 @@
 defmodule EntityTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
   alias Ecstatic.{Entity, Component, Aspect, Changes}
   alias Test.{TestingEntity,TestingComponent}
   alias TestHelper
@@ -9,16 +9,9 @@ defmodule EntityTest do
   doctest Entity
 
   setup do
-    {:ok, _pid} = Ecstatic.Supervisor.start_link([])
+    {:ok, pids} = TestHelper.start_supervisor_with_monitor()
+    on_exit TestHelper.clean_up_on_exit(pids)
     :ok
-  end
-
-  test "default module exists" do
-    assert is_list(Entity.module_info())
-  end
-
-  test "module exists" do
-    assert is_list(TestingEntity.module_info())
   end
 
   test "create default TestingEntity" do

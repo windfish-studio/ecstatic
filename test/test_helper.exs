@@ -27,11 +27,24 @@ defmodule TestHelper do
 
   def initialize(watcher \\ Test.TestingWatcher.OneSecInfinity) do
     Application.put_env(:ecstatic, :watchers, fn() -> watcher.watchers end)  #watchers definition
-    Application.put_env(:ecstatic, :test_pid, self())                         #spy init
-    {:ok, _pid} = Ecstatic.Supervisor.start_link([])
+    Application.put_env(:ecstatic, :test_pid, self())
+    {:ok, pids} = start_supervisor_with_monitor()
     component = Test.TestingComponent.new()
     entity = Test.TestingEntity.new([component])
     #wait_receiver()
-    {entity.id,component}
+    {entity.id,component, pids}
+  end
+
+  def start_supervisor_with_monitor() do
+    {:ok, supervisor} = Ecstatic.Supervisor.start_link([])
+    {:ok, consumer} = Test.TestingEventConsumer.start_link(self())
+    {:ok, [supervisor, consumer]}
+  end
+
+  def clean_up_on_exit(pids) do
+    fn ->
+      IO.inspect(pids)
+      Enum.each(pids, fn pid -> Process.exit(pid, :kill) end)
+    end
   end
 end

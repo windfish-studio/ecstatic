@@ -1,5 +1,5 @@
 defmodule ComponentTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
   alias Test.TestingComponent
   alias Ecstatic.Component
 
