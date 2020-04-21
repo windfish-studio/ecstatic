@@ -40,11 +40,4 @@ defmodule TestHelper do
     {:ok, consumer} = Test.TestingEventConsumer.start_link(self())
     {:ok, [supervisor, consumer]}
   end
-
-  def clean_up_on_exit(pids) do
-    fn ->
-      IO.inspect(pids)
-      Enum.each(pids, fn pid -> Process.exit(pid, :kill) end)
-    end
-  end
 end

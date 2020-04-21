@@ -10,7 +10,6 @@ defmodule EntityTest do
 
   setup do
     {:ok, pids} = TestHelper.start_supervisor_with_monitor()
-    on_exit TestHelper.clean_up_on_exit(pids)
     :ok
   end
 

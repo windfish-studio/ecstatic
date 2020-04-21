@@ -14,7 +14,6 @@ defmodule TickerTest do
 
   setup context do
     {entity_id, component, pids} = TestHelper.initialize(context[:watcher])
-    TestHelper.clean_up_on_exit(pids)
     [entity_id: entity_id, component: component]
   end
   
