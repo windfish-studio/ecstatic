@@ -25,7 +25,10 @@ defmodule TestHelper do
     end
   end
 
-  def initialize() do
+  def initialize(watcher_mod) do
+    Application.put_env(:ecstatic, :watchers, fn() -> TestingWatcher.watchers end)  #watchers definition
+    Application.put_env(:ecstatic, :test_pid, self())
+    {:ok, _pid} = Ecstatic.Supervisor.start_link([])
     entity = Test.TestingEntity.new([Test.TestingComponent.new()])
     wait_receiver()
     {entity.id,nil}

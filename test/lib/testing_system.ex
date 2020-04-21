@@ -10,7 +10,7 @@ defmodule Test.TestingSystem do
   #non-reactive
   def dispatch(entity, delta) do
     pid = Application.get_env(:ecstatic, :test_pid)
-    send pid, "hello world"
+    send pid, "hello world" #i can only test delta, not the ticks. Also, i can see components, changes, entity
     c = Entity.find_component(entity, TestingComponent)
 
     %Changes{updated: [c]}

@@ -29,13 +29,16 @@ defmodule Ecstatic.Ticker do
     {:ok, %Ecstatic.Ticker{}}
   end
 
-  defp update_ticks(state, {c_id, system}, tick, new_time \\ get_time) do
-    new_ticks_left = Map.put(state.ticks_left, {c_id, system}, tick)
+  defp update_last_tick_time(state, {c_id, system}, new_time \\ get_time) do
     new_last_tick_time = Map.put(state.last_tick_time, {c_id, system}, new_time)
-    out = %__MODULE__{ticks_left: new_ticks_left, last_tick_time: new_last_tick_time}
-    pid = Application.get_env(:ecstatic, :ticker)
-    send(pid, out)
-    out
+    %__MODULE__{last_tick_time: new_last_tick_time}
+  end
+
+  defp update_ticks(state, {c_id, system}, new_ticks_left, new_time \\ get_time) do
+    new_ticks_left = Map.put(state.ticks_left, {c_id, system}, new_ticks_left)
+    new_last_tick_time = Map.put(state.last_tick_time, {c_id, system}, new_time)
+    %__MODULE__{ticks_left: new_ticks_left, last_tick_time: new_last_tick_time}
+    #maybe we should return a state as new_state
   end
 
   defp delta(state, {c_id, system}, new_time \\ get_time) do
@@ -52,7 +55,7 @@ defmodule Ecstatic.Ticker do
           delta = delta(state, {c_id, system}, t)
           system.process(entity, delta)
           case t_left do 
-            :infinity -> {:noreply, state}
+            :infinity -> {:noreply, update_last_tick_time(state, {c_id, system}, t)}
             _ -> {:noreply, update_ticks(state, {c_id, system}, (t_left - 1), t)}
           end
       0 ->

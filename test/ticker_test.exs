@@ -8,25 +8,25 @@ defmodule TickerTest do
   doctest Ticker
 
   setup do
-    Application.put_env(:ecstatic, :ticker, fn() -> end)
-    Application.put_env(:ecstatic, :watchers, fn() -> TestingWatcher.watchers end)
-    Application.put_env(:ecstatic, :test_pid, self())
-    {:ok, _pid} = Ecstatic.Supervisor.start_link([])
-    TestHelper.initialize()
     :ok
   end
 
   test "module exists" do
+    TestHelper.initialize([TestingWatcher])
     assert is_list(Ticker.module_info())
   end
 
   test "1 sec watcher" do
-    message = receive do
-      message -> message
-    after
-      1000 -> :timeout
-    end
-    assert message == "hello world"
-    assert_receive "hello world"
+    TestHelper.initialize([TestingWatcher])
+    assert_receive "hello world",1000
+  end
+
+  test "infinity watcher" do
+    TestHelper.initialize([TestingWatcher])
+  end
+
+  test "n ticks" do
+    assert_receive n
+    refute_receive :bye, 1000
   end
 end
