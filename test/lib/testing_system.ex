@@ -7,13 +7,14 @@ defmodule Test.TestingSystem do
   def aspect do
     Ecstatic.Aspect.new(with: [], without: [])
   end
-  #non-reactive
   def dispatch(entity, delta) do
-    pid = Application.get_env(:ecstatic, :test_pid)
-    send pid, "hello world" #i can only test delta, not the ticks. Also, i can see components, changes, entity
+    pid = Application.get_env(:ecstatic, :test_pid) #spy
+    #I can only test delta, not the ticks. Also, i can see components, changes, entity
     c = Entity.find_component(entity, TestingComponent)
-
-    %Changes{updated: [c]}
+    |> TestingComponent.inc()
+    changes = %Changes{updated: [c]}
+    send pid, {entity, changes}
+    changes
   end
   #reactive
   def dispatch(entity,changes,delta) do

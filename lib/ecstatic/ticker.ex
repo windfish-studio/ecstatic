@@ -31,14 +31,12 @@ defmodule Ecstatic.Ticker do
 
   defp update_last_tick_time(state, {c_id, system}, new_time \\ get_time) do
     new_last_tick_time = Map.put(state.last_tick_time, {c_id, system}, new_time)
-    %__MODULE__{last_tick_time: new_last_tick_time}
+    %__MODULE__{state | last_tick_time: new_last_tick_time}
   end
 
-  defp update_ticks(state, {c_id, system}, new_ticks_left, new_time \\ get_time) do
+  defp update_ticks_left(state, {c_id, system}, new_ticks_left) do
     new_ticks_left = Map.put(state.ticks_left, {c_id, system}, new_ticks_left)
-    new_last_tick_time = Map.put(state.last_tick_time, {c_id, system}, new_time)
-    %__MODULE__{ticks_left: new_ticks_left, last_tick_time: new_last_tick_time}
-    #maybe we should return a state as new_state
+    %__MODULE__{state | ticks_left: new_ticks_left}
   end
 
   defp delta(state, {c_id, system}, new_time \\ get_time) do
@@ -52,14 +50,15 @@ defmodule Ecstatic.Ticker do
         when (is_number(t_left) and t_left > 0) ->
           entity = Ecstatic.Store.Ets.get_entity(e_id)
           t = get_time()
+          state = update_last_tick_time(state, {c_id, system}, t)
           delta = delta(state, {c_id, system}, t)
           system.process(entity, delta)
           case t_left do 
-            :infinity -> {:noreply, update_last_tick_time(state, {c_id, system}, t)}
-            _ -> {:noreply, update_ticks(state, {c_id, system}, (t_left - 1), t)}
+            :infinity -> {:noreply, state}
+            _ -> {:noreply, update_ticks_left(state, {c_id, system}, (t_left - 1))}
           end
       0 ->
-        {:noreply, update_ticks(state, {c_id, system}, :stopped)}
+        {:noreply, update_ticks_left(state, {c_id, system}, :stopped)}
       :stopped -> 
         {:noreply, state}
     end
@@ -67,10 +66,10 @@ defmodule Ecstatic.Ticker do
 
   def handle_info({:start_tick, c_id, e_id, system, [every: _interval, for: ticks]}, state) do
     send(self(), {:tick, c_id, e_id, system})
-    {:noreply, update_ticks(state, {c_id, system}, ticks)}
+    {:noreply, update_ticks_left(state, {c_id, system}, ticks)}
   end
 
   def handle_info({:stop_tick, c_id, system}, state) do
-    {:noreply, update_ticks(state, {c_id, system}, :stopped)}
+    {:noreply, update_ticks_left(state, {c_id, system}, :stopped)}
   end
 end

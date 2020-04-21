@@ -1,6 +1,5 @@
 defmodule ComponentTest do
   use ExUnit.Case
-
   alias Test.TestingComponent
   alias Ecstatic.Component
 

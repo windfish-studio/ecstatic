@@ -1,6 +1,5 @@
 defmodule EntityTest do
   use ExUnit.Case
-
   alias Ecstatic.{Entity, Component, Aspect, Changes}
   alias Test.{TestingEntity,TestingComponent}
   alias TestHelper
@@ -10,7 +9,6 @@ defmodule EntityTest do
   doctest Entity
 
   setup do
-#    Application.put_env(:ecstatic, :watchers, fn() -> TestingWatcher.watchers end)
     {:ok, _pid} = Ecstatic.Supervisor.start_link([])
     :ok
   end

@@ -25,12 +25,13 @@ defmodule TestHelper do
     end
   end
 
-  def initialize(watcher_mod) do
-    Application.put_env(:ecstatic, :watchers, fn() -> TestingWatcher.watchers end)  #watchers definition
-    Application.put_env(:ecstatic, :test_pid, self())
+  def initialize(watcher \\ Test.TestingWatcher.OneSecInfinity) do
+    Application.put_env(:ecstatic, :watchers, fn() -> watcher.watchers end)  #watchers definition
+    Application.put_env(:ecstatic, :test_pid, self())                         #spy init
     {:ok, _pid} = Ecstatic.Supervisor.start_link([])
-    entity = Test.TestingEntity.new([Test.TestingComponent.new()])
-    wait_receiver()
-    {entity.id,nil}
+    component = Test.TestingComponent.new()
+    entity = Test.TestingEntity.new([component])
+    #wait_receiver()
+    {entity.id,component}
   end
 end
