@@ -7,6 +7,7 @@ defmodule Test.TestingWatcher.Couple do
     run TestingSystem, [every: 1000, for: :infinity]
   end
 
+
   watch TestingComponent2 do
     run TestingSystem2, [every: 1000, for: :infinity]
   end
