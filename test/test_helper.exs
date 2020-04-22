@@ -1,6 +1,6 @@
 ExUnit.start()
 defmodule TestHelper do
-
+  require Logger
   #UUID.info does the same. Replace usages by this one
   def ecs_id?(string) do
     bool = String.length(string) == 36 &&
@@ -25,19 +25,18 @@ defmodule TestHelper do
     end
   end
 
-  def initialize(watcher \\ Test.TestingWatcher.OneSecInfinity) do
-    Application.put_env(:ecstatic, :watchers, fn() -> watcher.watchers end)  #watchers definition
-    Application.put_env(:ecstatic, :test_pid, self())
-    {:ok, pids} = start_supervisor_with_monitor()
+  def initialize(watchers \\ []) do
+    {:ok, pids} = start_supervisor_with_monitor([watchers: watchers])
     component = Test.TestingComponent.new()
     entity = Test.TestingEntity.new([component])
     #wait_receiver()
     {entity.id,component, pids}
   end
 
-  def start_supervisor_with_monitor() do
-    {:ok, supervisor} = Ecstatic.Supervisor.start_link([])
-    {:ok, consumer} = Test.TestingEventConsumer.start_link(self())
+  def start_supervisor_with_monitor(arg \\ []) do
+    Application.put_env(:ecstatic, :test_pid, self())               #monitor listener
+    {:ok, supervisor} = Ecstatic.Supervisor.start_link(arg)
+    {:ok, consumer} = Test.TestingEventConsumer.start_link(self())  #monitor speaker
     {:ok, [supervisor, consumer]}
   end
 end

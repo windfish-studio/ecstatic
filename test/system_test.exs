@@ -9,15 +9,11 @@ defmodule SystemTest do
   doctest TestingSystem
 
   setup context do
-    {entity_id, component, pids} = TestHelper.initialize(context[:watcher])
+    {entity_id, component, pids} = TestHelper.initialize(context[:watchers])
     [entity_id: entity_id, component: component]
   end
 
-  test "module exists" do
-    assert is_list(System.module_info())
-  end
-
-  @tag watcher: OneSecInfinity
+  @tag watchers: [OneSecInfinity]
   test "test initialization", context do
     {entity_id, component} = {context.entity_id, context.component}
     assert_receive {%Entity{id: ^entity_id},

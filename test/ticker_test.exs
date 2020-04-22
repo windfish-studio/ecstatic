@@ -13,7 +13,7 @@ defmodule TickerTest do
   doctest Ticker
 
   setup context do
-    {entity_id, component, pids} = TestHelper.initialize(context[:watcher])
+    {entity_id, component, pids} = TestHelper.initialize(context[:watchers])
     [entity_id: entity_id, component: component]
   end
   
@@ -22,11 +22,7 @@ defmodule TickerTest do
                      %Changes{updated: [%Component{state: %{var: n, another_var: :zero}, type: TestingComponent}]}},time_out
   end
 
-#  defmacro loop(iterations,entity_id) do
-#    Enum.each(iterations, fn i -> assertions(i,entity_id) end)
-#  end
-
-  @tag watcher: OneSecInfinity
+  @tag watchers: [OneSecInfinity]
   test "1 tick per second system", context do
     {entity_id, component} = {context.entity_id, context.component}
     assert_receive {%Entity{id: ^entity_id},
@@ -37,7 +33,7 @@ defmodule TickerTest do
                      %Changes{updated: [%Component{state: %{var: 3, another_var: :zero}, type: TestingComponent}]}},3000
   end
 
-  @tag watcher: OneSecInfinity
+  @tag watchers: [OneSecInfinity]
   test "n ticks", context do
     {entity_id, component} = {context.entity_id, context.component}
     assert_receive {%Entity{id: ^entity_id},
@@ -47,7 +43,7 @@ defmodule TickerTest do
     assert_receive {%Entity{id: ^entity_id},
                      %Changes{updated: [%Component{state: %{var: 3, another_var: :zero}, type: TestingComponent}]}},1100
   end
-  @tag watcher: OneSecFiveShots
+  @tag watchers: [OneSecFiveShots]
   test "limited ticks", context do
     {entity_id, component} = {context.entity_id, context.component}
     assert_receive {%Entity{id: ^entity_id},

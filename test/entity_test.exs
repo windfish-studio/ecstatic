@@ -9,7 +9,7 @@ defmodule EntityTest do
   doctest Entity
 
   setup do
-    {:ok, pids} = TestHelper.start_supervisor_with_monitor()
+    {:ok, _pids} = TestHelper.start_supervisor_with_monitor()
     :ok
   end
 
