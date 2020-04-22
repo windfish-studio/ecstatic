@@ -27,11 +27,11 @@ defmodule TestHelper do
 
   def initialize(watchers \\ []) do
     {:ok, pids} = start_supervisor_with_monitor([watchers: watchers])
-    component = Test.TestingComponent.new()
-    entity = Test.TestingEntity.new([component])
-    #wait_receiver()
-    {entity.id,component, pids}
+    components = [Test.TestingComponent.new(), Test.TestingComponent2.new()]
+    entity = Test.TestingEntity.new(components)
+    {entity.id,components, pids}
   end
+
 
   def start_supervisor_with_monitor(arg \\ []) do
     Application.put_env(:ecstatic, :test_pid, self())               #monitor listener

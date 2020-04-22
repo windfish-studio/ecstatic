@@ -13,16 +13,15 @@ defmodule Ecstatic.System do
 
       @type dispatch_fun ::
               (Entity.t() -> Changes.t())
-              | (Entity.t(), Changes.t() -> Changes.t())
       @type event_push :: :ok
 
-      @spec process(entity :: Entity.t(), nil) :: event_push()
+      @spec process(entity :: Entity.t(), delta :: number()) :: event_push()
       def process(entity, delta) do
         function = fn -> dispatch(entity, delta) end
         do_process(entity, function)
       end
 
-      @spec process(entity :: Entity.t(), changes :: Changes.t()) :: event_push()
+      @spec process(entity :: Entity.t(), changes :: Changes.t(), delta :: number()) :: event_push()
       def process(entity, changes, delta) do
         function = fn -> dispatch(entity, changes, delta) end
         do_process(entity, function)
@@ -39,6 +38,7 @@ defmodule Ecstatic.System do
         EventSource.push(event)
       end
 
+      @spec merge_changes(Entity.t(), dispatch_fun()) :: event_push()
       defp merge_changes(entity, new_changes) do
         changes = Enum.map(new_changes.updated,
           fn new_c ->
