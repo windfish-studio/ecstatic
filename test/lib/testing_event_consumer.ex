@@ -7,6 +7,8 @@ defmodule Test.TestingEventConsumer do
     def start_link(test_pid) do
       GenStage.start_link(__MODULE__, test_pid)
     end
+
+    ##WHERE IS APPLICATION.GET?
     def init(test_pid) do
       {:consumer, test_pid,
         subscribe_to: [
@@ -23,4 +25,3 @@ defmodule Test.TestingEventConsumer do
       {:noreply, [], test_pid}
     end
 end
-

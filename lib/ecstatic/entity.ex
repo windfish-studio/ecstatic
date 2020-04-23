@@ -7,7 +7,7 @@ defmodule Ecstatic.Entity do
     Changes,
     Store
   }
-
+  require Logger
   defstruct [:id, components: []]
 
   @type id :: String.t()
@@ -111,6 +111,7 @@ defmodule Ecstatic.Entity do
         %Component{} = c -> c
         c when is_atom(c) -> c.new
       end)
+      Logger.debug(inspect(updated))
     updated
     |> Enum.map(fn upd ->
                   case upd do
