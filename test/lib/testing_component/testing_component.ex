@@ -1,10 +1,19 @@
 defmodule Test.TestingComponent do
   @moduledoc false
   use Ecstatic.Component
-  @default_state %{var: 0, another_var: :zero}
+  @default_state %{var: 0, f: 0}
 
   def inc(component) do
     new_state = %{component.state | var: component.state.var + 1}
+    %{component | state: new_state}
+  end
+
+  def frequency(component, time) do
+    f = case time do
+      0 -> :infinity
+      _ -> 1/time
+    end
+    new_state = %{component.state | f: f}
     %{component | state: new_state}
   end
 end

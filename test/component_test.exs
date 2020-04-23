@@ -25,14 +25,14 @@ defmodule ComponentTest do
   test "instance a new component" do
     new_comp = TestingComponent.new()
     assert TestHelper.ecs_id?(new_comp.id)
-    assert new_comp.state == %{var: 0, another_var: :zero}
+    assert new_comp.state == %{var: 0, f: 0}
     assert new_comp.type == TestingComponent
   end
 
   test "init component's state" do
-    new_comp = TestingComponent.new(%{var: 42, another_var: :fortytwo, robot: Depressed})
+    new_comp = TestingComponent.new(%{var: 42, f: 0, robot: Depressed})
     assert TestHelper.ecs_id?(new_comp.id)
-    assert new_comp.state == %{var: 42, another_var: :fortytwo, robot: Depressed}
+    assert new_comp.state == %{var: 42, f: 0, robot: Depressed}
     assert new_comp.type == TestingComponent
   end
 end

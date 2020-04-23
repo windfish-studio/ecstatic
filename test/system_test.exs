@@ -1,8 +1,10 @@
 defmodule SystemTest do
   use ExUnit.Case, async: false
-  alias Test.{TestingSystem, TestingComponent}
+  alias Test.{AnotherTestingSystem, TestingSystem}
   alias Test.TestingWatcher.{OneSecInfinity}
-  alias Ecstatic.{Changes, Entity, Component}
+  alias Ecstatic.Entity
+  alias Test.TestingWatcher.{OneSecInfinity, OneSecFiveShots, OneShot, RealTime, Couple}
+
 
   @moduletag :capture_log
 
@@ -13,13 +15,62 @@ defmodule SystemTest do
     [entity_id: entity_id, components: components]
   end
 
-  @tag watchers: [OneSecInfinity]
-  test "check changes structure", context do
-    {entity_id, _components} = {context.entity_id, context.components}
-    assert_receive {:testing_system, {%Entity{id: ^entity_id},
-                     %Changes{updated: [
-                        {%Component{state: %{var: 0, another_var: :zero}, type: TestingComponent},
-                          %Component{state: %{var: 1, another_var: :zero}, type: TestingComponent}}
-                     ]}}},500
+  describe "reactive watcher over the testing systems" do
+    @tag watchers: [OneSecInfinity]
+    test "check changes structure", context do
+      {entity_id, _components} = {context.entity_id, context.components}
+      assert_receive {:testing_system, {%Entity{id: ^entity_id}, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: 1}} }] }}}, 500
+    end
+  end
+
+  describe "non-reactive watcher over the testing systems" do
+    def periodic_assertions_reception(range, time_out) do
+      Enum.each(range, fn n ->
+        old = n-1
+        assert_receive {:testing_system, {_entity, %{updated: [
+                                             {%{state: %{var: ^old}},
+                                               %{state: %{var: ^n}} }] }}}, time_out
+      end)
+    end
+
+    @tag watchers: [OneSecInfinity]
+    test "1 tick per second system" do
+      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: 1}} }] }}}, 50
+      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 1050
+      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 1050
+    end
+
+    @tag watchers: [OneSecInfinity]
+    test "ticks exactly per 1 sec" do
+      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: 1}} }] }}}, 50
+      refute_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 950
+      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 1050
+      refute_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 950
+      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 1050
+    end
+
+    @tag watchers: [OneSecFiveShots]
+    test "limited ticks with helper" do
+      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: 1}} }] }}}, 50
+      periodic_assertions_reception(2..5, 1050)
+    end
+
+    #TODO. Test multiple watchers over the same component
+    @tag watchers: [OneShot]
+    test "just one reception" do
+      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: 1}} }] }}}, 50
+      refute_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 2500
+    end
+
+    @tag watchers: [RealTime]
+    test "real time execution" do
+      periodic_assertions_reception(1..10, 50)
+    end
+
+    @tag watchers: [Couple]
+    test "a non-single watcher" do
+      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: 1}} }] }}}, 50
+      assert_receive {AnotherTestingSystem, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: -1}} }] }}}, 50
+    end
   end
 end

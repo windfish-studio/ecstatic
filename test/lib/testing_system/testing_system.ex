@@ -12,7 +12,7 @@ defmodule Test.TestingSystem do
     # TODO test delta
     c = Entity.find_component(entity, TestingComponent)
         |> TestingComponent.inc()
-
+        |> TestingComponent.frequency(delta)
     changes = %Changes{updated: [{Entity.find_component(entity,TestingComponent), c}]}
     send pid, {:testing_system, {entity, changes}}
     %Changes{updated: [c]}
