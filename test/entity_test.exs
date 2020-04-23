@@ -31,7 +31,7 @@ defmodule EntityTest do
     assert TestHelper.ecs_id?(entity.id)
     TestHelper.wait_receiver()
     entity = Ecstatic.Store.Ets.get_entity(entity.id)
-    assert entity.components == [component]
+    assert Enum.at(entity.components,0) == component
   end
 
   test "adding component" do

@@ -43,9 +43,7 @@ defmodule Ecstatic.EventConsumer do
       |> Enum.filter(change_contains_component)
       |> Enum.filter(watcher_should_trigger)
 
-    Logger.debug(inspect({"before merge changes: ", changes}))
     changes = merge_changes(entity, changes)
-    Logger.debug(inspect({"after merge changes: ",changes}))
     new_entity = Entity.apply_changes(entity, changes)
     Enum.each(watchers_to_use, fn w ->
       case Map.get(w, :ticker, nil) do
@@ -107,7 +105,6 @@ defmodule Ecstatic.EventConsumer do
   defp merge_changes(entity, new_changes) do
     changes_updated = Enum.map(new_changes.updated,
       fn new_c ->
-          Logger.debug(inspect({"merge_changes", new_c}))
           old_c = Enum.find(entity.components,
             fn old_c -> old_c.id == new_c.id end)
           {old_c, new_c}

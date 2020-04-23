@@ -1,6 +1,5 @@
 ExUnit.start()
 defmodule TestHelper do
-  require Logger
   #UUID.info does the same. Replace usages by this one
   def ecs_id?(string) do
     bool = String.length(string) == 36 &&
@@ -19,7 +18,7 @@ defmodule TestHelper do
   end
   def wait_receiver(timeout_time_milisec) do
     receive do
-      {:debug, _new, _} -> wait_receiver(timeout_time_milisec)
+      {:test_event_consumer, _new, _} -> wait_receiver(timeout_time_milisec)
     after
       timeout_time_milisec -> :time_out
     end
@@ -27,7 +26,7 @@ defmodule TestHelper do
 
   def initialize(watchers \\ []) do
     {:ok, pids} = start_supervisor_with_monitor([watchers: watchers])
-    components = [Test.TestingComponent.new(), Test.TestingComponent2.new()]
+    components = [Test.TestingComponent.new(), Test.AnotherTestingComponent.new()]
     entity = Test.TestingEntity.new(components)
     {entity.id,components, pids}
   end
