@@ -1,14 +1,13 @@
 defmodule Test.TestingWatcher.Couple do
   @moduledoc false
   use Ecstatic.Watcher
-  alias Test.{TestingSystem, AnotherTestingSystem, TestingComponent, AnotherTestingComponent}
+  alias Test.{TestingSystem, TestingComponent}
 
-  watch TestingComponent do
-    run TestingSystem, [every: 1000, for: :infinity]
+  watch TestingComponent.One do
+    run TestingSystem.One, [every: 1000, for: :infinity]
   end
 
-
-  watch AnotherTestingComponent do
-    run AnotherTestingSystem, [every: 1000, for: :infinity]
+  watch TestingComponent.AnotherOne do
+    run TestingSystem.AnotherOne, [every: 1000, for: :infinity]
   end
 end

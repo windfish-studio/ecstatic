@@ -26,7 +26,7 @@ defmodule EntityTest do
   end
 
   test "create Entity with a component" do
-    component = TestingComponent.new()
+    component = TestingComponent.One.new()
     entity = TestingEntity.new([component])
     assert TestHelper.ecs_id?(entity.id)
     TestHelper.wait_receiver()
@@ -35,7 +35,7 @@ defmodule EntityTest do
   end
 
   test "adding component" do
-    component = TestingComponent.new()
+    component = TestingComponent.One.new()
     entity = TestingEntity.new()
     |> Entity.add(component)
     TestHelper.wait_receiver()
@@ -45,35 +45,35 @@ defmodule EntityTest do
   end
 
   test "match aspect" do
-    aspect = Aspect.new(with: [TestingComponent], without: [])
-    assert aspect == %Aspect{with: [TestingComponent], without: []} #TODO: move this assert to aspectTest
-    entity = TestingEntity.new([TestingComponent.new])
+    aspect = Aspect.new(with: [TestingComponent.One], without: [])
+    assert aspect == %Aspect{with: [TestingComponent.One], without: []}
+    entity = TestingEntity.new([TestingComponent.One.new])
     TestHelper.wait_receiver()
     entity = Ecstatic.Store.Ets.get_entity(entity.id)
     assert Entity.match_aspect?(entity, aspect)
   end
 
   test "has component" do
-    component = TestingComponent.new()
+    component = TestingComponent.One.new()
     entity = TestingEntity.new()
-    assert !Entity.has_component?(entity,TestingComponent)
+    assert !Entity.has_component?(entity,TestingComponent.One)
     entity = Entity.add(entity, component)
     TestHelper.wait_receiver()
     entity = Ecstatic.Store.Ets.get_entity(entity.id)
-    assert Entity.has_component?(entity,TestingComponent)
+    assert Entity.has_component?(entity,TestingComponent.One)
   end
 
   test "find component" do
-    component = TestingComponent.new()
+    component = TestingComponent.One.new()
     entity = TestingEntity.new([component])
-    assert Entity.find_component(entity,TestingComponent) == nil
+    assert Entity.find_component(entity,TestingComponent.One) == nil
     TestHelper.wait_receiver()
     entity = Ecstatic.Store.Ets.get_entity(entity.id)
-    assert Entity.find_component(entity,TestingComponent) == component
+    assert Entity.find_component(entity,TestingComponent.One) == component
   end
 
   test "apply_changes" do
-    component = TestingComponent.new()
+    component = TestingComponent.One.new()
     entity = TestingEntity.new([component])
     new_state = %{component.state | var: 42}
     new_component = %{component | state: new_state}

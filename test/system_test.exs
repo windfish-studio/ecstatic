@@ -1,13 +1,13 @@
 defmodule SystemTest do
   use ExUnit.Case, async: false
-  alias Test.{AnotherTestingSystem, TestingSystem}
+  alias Test.TestingSystem
   alias Test.TestingWatcher.{OneSecInfinity}
   alias Ecstatic.{Entity, Changes, Component}
   alias Test.TestingWatcher.{OneSecInfinity, OneSecFiveShots, OneShot, RealTime, Couple}
 
   @moduletag :capture_log
 
-  doctest TestingSystem
+  doctest TestingSystem.One #this is a system
 
   setup context do
     {entity_id, components, _pids} = TestHelper.initialize(context[:watchers])
@@ -15,7 +15,7 @@ defmodule SystemTest do
   end
 
   def assert_tick_0() do
-    assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0, f: 0}},
+    assert_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 0, f: 0}},
       %{state: %{var: 1, f: :infinity}} }] }}}, 50
   end
 
@@ -24,12 +24,12 @@ defmodule SystemTest do
     test "check changes structure", context do
       {entity_id, _components} = {context.entity_id, context.components}
       #tick 0
-      assert_receive {:testing_system,
+      assert_receive {TestingSystem.One,
                        {%Entity{id: ^entity_id}, %Changes{updated: [
                                                      {%{state: %{var: 0, f: 0}},
                                                        %{state: %{var: 1, f: :infinity}} }] }}}, 500
       #tick 1
-      {_, {_, changes}} = assert_receive {:testing_system,
+      {_, {_, changes}} = assert_receive {TestingSystem.One,
                                  {%Entity{id: ^entity_id}, %Changes{updated: [
                                                                {%{state: %{var: 1, f: :infinity}},
                                                                  %{state: %{var: 2}} }] }}}, 1050
@@ -47,7 +47,7 @@ defmodule SystemTest do
     def periodic_assertions_reception(range, time_out) do
       Enum.each(range, fn n ->
         old = n-1
-        assert_receive {:testing_system, {_entity, %{updated: [
+        assert_receive {TestingSystem.One, {_entity, %{updated: [
                                              {%{state: %{var: ^old}},
                                                %{state: %{var: ^n}} }] }}}, time_out
       end)
@@ -56,17 +56,17 @@ defmodule SystemTest do
     @tag watchers: [OneSecInfinity]
     test "1 tick per second system" do
       assert_tick_0()
-      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 1050
-      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 1050
+      assert_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 1050
+      assert_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 1050
     end
 
     @tag watchers: [OneSecInfinity]
     test "ticks exactly per 1 sec" do
       assert_tick_0()
-      refute_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 950
-      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 1050
-      refute_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 950
-      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 1050
+      refute_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 950
+      assert_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 1050
+      refute_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 950
+      assert_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 1050
     end
 
     @tag watchers: [OneSecFiveShots]
@@ -79,7 +79,7 @@ defmodule SystemTest do
     @tag watchers: [OneShot]
     test "just one reception" do
       assert_tick_0()
-      refute_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 2500
+      refute_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 2500
     end
 
     @tag watchers: [RealTime]
@@ -90,7 +90,7 @@ defmodule SystemTest do
     @tag watchers: [Couple]
     test "a non-single watcher" do
       assert_tick_0()
-      assert_receive {AnotherTestingSystem, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: -1}} }] }}}, 50
+      assert_receive {TestingSystem.AnotherOne, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: -1}} }] }}}, 50
     end
   end
 
@@ -98,7 +98,7 @@ defmodule SystemTest do
     def periodic_assertions_reception(range, time_out, expected_f) do
       Enum.each(range, fn n ->
         old = n-1
-        {_, {_, changes}} = assert_receive {:testing_system, {_entity, %{updated: [
+        {_, {_, changes}} = assert_receive {TestingSystem.One, {_entity, %{updated: [
                                                                            {%{state: %{var: ^old}},
                                                                              %{state: %{var: ^n}} }] }}}, time_out
         [{_,%Component{state: %{f: f}}}] = changes.updated
@@ -109,7 +109,7 @@ defmodule SystemTest do
     def assert_graphically_fluid(range, time_out, expected_f \\ 120) do
       Enum.each(range, fn n ->
         old = n-1
-        {_, {_, changes}} = assert_receive {:testing_system, {_entity, %{updated: [
+        {_, {_, changes}} = assert_receive {TestingSystem.One, {_entity, %{updated: [
                                                                            {%{state: %{var: ^old}},
                                                                              %{state: %{var: ^n}} }] }}}, time_out
         [{_,%Component{state: %{f: f}}}] = changes.updated
@@ -121,7 +121,7 @@ defmodule SystemTest do
     test "5 ticks in 5 seconds, frec » 1Hz" do
       assert_tick_0()
       periodic_assertions_reception(2..5, 1050, 1)
-      refute_receive {:testing_system, _}, 50
+      refute_receive {TestingSystem.One, _}, 50
     end
 
     @tag watchers: [RealTime]

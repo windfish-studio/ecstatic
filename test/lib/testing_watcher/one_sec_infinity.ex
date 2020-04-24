@@ -1,9 +1,10 @@
 defmodule Test.TestingWatcher.OneSecInfinity do
   @moduledoc false
   use Ecstatic.Watcher
-  alias Test.{TestingSystem, TestingComponent}
+  alias Test.TestingSystem.One , as: TheSystem
+  alias Test.TestingComponent.One, as: TheComponent
 
-  watch TestingComponent do
-    run TestingSystem, [every: 1000, for: :infinity]
+  watch TheComponent do
+    run TheSystem, [every: 1000, for: :infinity]
   end
 end

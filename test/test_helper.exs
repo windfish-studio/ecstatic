@@ -26,7 +26,7 @@ defmodule TestHelper do
 
   def initialize(watchers \\ []) do
     {:ok, pids} = start_supervisor_with_monitor([watchers: watchers])
-    components = [Test.TestingComponent.new(), Test.AnotherTestingComponent.new()]
+    components = [Test.TestingComponent.One.new(), Test.TestingComponent.AnotherOne.new()]
     entity = Test.TestingEntity.new(components)
     {entity.id,components, pids}
   end

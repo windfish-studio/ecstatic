@@ -1,4 +1,4 @@
-defmodule Test.TestingComponent do
+defmodule Test.TestingComponent.One do
   @moduledoc false
   use Ecstatic.Component
   @default_state %{var: 0, f: 0}

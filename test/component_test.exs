@@ -8,7 +8,7 @@ defmodule ComponentTest do
   doctest Component
 
   test "module exists" do
-    assert is_list(TestingComponent.module_info())
+    assert is_list(TestingComponent.One.module_info())
   end
 
   test "module exists basic" do
@@ -23,16 +23,16 @@ defmodule ComponentTest do
   end
 
   test "instance a new component" do
-    new_comp = TestingComponent.new()
+    new_comp = TestingComponent.One.new()
     assert TestHelper.ecs_id?(new_comp.id)
     assert new_comp.state == %{var: 0, f: 0}
-    assert new_comp.type == TestingComponent
+    assert new_comp.type == TestingComponent.One
   end
 
   test "init component's state" do
-    new_comp = TestingComponent.new(%{var: 42, f: 0, robot: Depressed})
+    new_comp = TestingComponent.One.new(%{var: 42, f: 0, robot: Depressed})
     assert TestHelper.ecs_id?(new_comp.id)
     assert new_comp.state == %{var: 42, f: 0, robot: Depressed}
-    assert new_comp.type == TestingComponent
+    assert new_comp.type == TestingComponent.One
   end
 end
