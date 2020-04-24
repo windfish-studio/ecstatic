@@ -8,8 +8,7 @@ defmodule Ecstatic.System do
     quote location: :keep do
       @behaviour Ecstatic.System
       alias Ecstatic.{Aspect, Changes, Component, Entity, EventSource}
-
-      @type dispatch_fun :: (Entity.t() -> number()) | any()  #TODO: fix this
+      @type dispatch_fun :: (() -> number())
       @type event_push :: :ok
 
       @spec process(entity :: Entity.t(), changes :: Changes.t(), delta :: number()) :: event_push()

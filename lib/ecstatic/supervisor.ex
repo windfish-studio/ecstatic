@@ -1,7 +1,9 @@
 defmodule Ecstatic.Supervisor do
   @moduledoc false
   use Supervisor
+  @type
 
+  @spec start_link()
   def start_link(arg \\ []) do
     Supervisor.start_link(__MODULE__, arg, name: __MODULE__)
   end

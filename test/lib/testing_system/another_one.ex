@@ -4,10 +4,12 @@ defmodule Test.TestingSystem.AnotherOne do
   alias Test.TestingComponent
   use Ecstatic.System
 
+  @impl true
   def aspect do
     Ecstatic.Aspect.new(with: [], without: [])
   end
 
+  @impl true
   def dispatch(entity,_changes,_delta) do
     pid = Application.get_env(:ecstatic, :test_pid) #spy
     c = Entity.find_component(entity, TestingComponent.AnotherOne)

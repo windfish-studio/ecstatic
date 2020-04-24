@@ -35,6 +35,9 @@ defmodule Ecstatic.EventConsumer do
 
   def handle_events([{entity, %Changes{} = changes} = _event], _from, %{watchers: watchers} = state) do
     Logger.debug(Kernel.inspect(changes, pretty: true))
+    ## TODO: avoid faster watcher to haste the slower one
+    ## add an id for every watcher or a par component, system.
+    ## The id would say if the watcher should trigger or not
     watcher_should_trigger = watcher_should_trigger?(entity, changes)
     change_contains_component = change_contains_component?(changes)
 
