@@ -2,9 +2,8 @@ defmodule SystemTest do
   use ExUnit.Case, async: false
   alias Test.{AnotherTestingSystem, TestingSystem}
   alias Test.TestingWatcher.{OneSecInfinity}
-  alias Ecstatic.Entity
+  alias Ecstatic.{Entity, Changes, Component}
   alias Test.TestingWatcher.{OneSecInfinity, OneSecFiveShots, OneShot, RealTime, Couple}
-
 
   @moduletag :capture_log
 
@@ -15,15 +14,31 @@ defmodule SystemTest do
     [entity_id: entity_id, components: components]
   end
 
-  describe "reactive watcher over the testing systems" do
+  describe "basic structure" do
     @tag watchers: [OneSecInfinity]
     test "check changes structure", context do
       {entity_id, _components} = {context.entity_id, context.components}
-      assert_receive {:testing_system, {%Entity{id: ^entity_id}, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: 1}} }] }}}, 500
+      #tick 0
+      assert_receive {:testing_system,
+                       {%Entity{id: ^entity_id}, %Changes{updated: [
+                                                     {%{state: %{var: 0, f: 0}},
+                                                       %{state: %{var: 1, f: :infinity}} }] }}}, 500
+      #tick 1
+      {_, {_, changes}} = assert_receive {:testing_system,
+                                 {%Entity{id: ^entity_id}, %Changes{updated: [
+                                                               {%{state: %{var: 1, f: :infinity}},
+                                                                 %{state: %{var: 2}} }] }}}, 1050
+      [{_,%Component{state: %{f: f}}}] = changes.updated
+      assert_in_delta(f, 1, 0.01)
     end
   end
 
-  describe "non-reactive watcher over the testing systems" do
+  describe "reactive watcher over the testing systems" do
+
+
+  end
+
+  describe "non-reactive var" do
     def periodic_assertions_reception(range, time_out) do
       Enum.each(range, fn n ->
         old = n-1
@@ -71,6 +86,49 @@ defmodule SystemTest do
     test "a non-single watcher" do
       assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: 1}} }] }}}, 50
       assert_receive {AnotherTestingSystem, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: -1}} }] }}}, 50
+    end
+  end
+
+  describe "delta on non-reactive watchers" do
+    def periodic_assertions_reception(range, time_out, expected_f) do
+      Enum.each(range, fn n ->
+        old = n-1
+        {_, {_, changes}} = assert_receive {:testing_system, {_entity, %{updated: [
+                                                                           {%{state: %{var: ^old}},
+                                                                             %{state: %{var: ^n}} }] }}}, time_out
+        [{_,%Component{state: %{f: f}}}] = changes.updated
+        assert_in_delta(f, expected_f, expected_f/100)
+      end)
+    end
+
+    def assert_graphically_fluid(range, time_out, expected_f \\ 120) do
+      Enum.each(range, fn n ->
+        old = n-1
+        {_, {_, changes}} = assert_receive {:testing_system, {_entity, %{updated: [
+                                                                           {%{state: %{var: ^old}},
+                                                                             %{state: %{var: ^n}} }] }}}, time_out
+        [{_,%Component{state: %{f: f}}}] = changes.updated
+        assert f>expected_f
+      end)
+    end
+
+    def assert_tick_0() do
+      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0, f: 0}},
+        %{state: %{var: 1, f: :infinity}} }] }}}, 50
+    end
+
+    @tag watchers: [OneSecFiveShots]
+    test "5 ticks in 5 seconds, frec » 1Hz" do
+      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0, f: 0}},
+        %{state: %{var: 1, f: :infinity}} }] }}}, 50
+      periodic_assertions_reception(2..5, 1050, 1)
+      refute_receive {:testing_system, _}, 50
+    end
+
+    @tag watchers: [RealTime]
+    test "real time execution" do
+      assert_tick_0()
+      assert_graphically_fluid(2..10, 50)
     end
   end
 end

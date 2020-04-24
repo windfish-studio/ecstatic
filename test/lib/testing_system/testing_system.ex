@@ -9,7 +9,6 @@ defmodule Test.TestingSystem do
   end
   def dispatch(entity, delta) do
     pid = Application.get_env(:ecstatic, :test_pid) #spy
-    # TODO test delta
     c = Entity.find_component(entity, TestingComponent)
         |> TestingComponent.inc()
         |> TestingComponent.frequency(delta)

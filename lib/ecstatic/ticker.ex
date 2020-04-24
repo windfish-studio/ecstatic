@@ -9,9 +9,10 @@ defmodule Ecstatic.Ticker do
   last_tick_time: %{system_component_pair => non_neg_integer()}
 }
   def get_time() do
-    DateTime.utc_now()
+    t=DateTime.utc_now()
     |>DateTime.truncate(:microsecond)
-    |>DateTime.to_unix()
+    |>DateTime.to_unix(:microsecond)
+    t/1000000
   end
 
   defstruct [
@@ -50,8 +51,8 @@ defmodule Ecstatic.Ticker do
         when (is_number(t_left) and t_left > 0) ->
           entity = Ecstatic.Store.Ets.get_entity(e_id)
           t = get_time()
-          state = update_last_tick_time(state, {c_id, system}, t)
           delta = delta(state, {c_id, system}, t)
+          state = update_last_tick_time(state, {c_id, system}, t)
           system.process(entity, delta)
           case t_left do 
             :infinity -> {:noreply, state}
