@@ -7,9 +7,9 @@ defmodule Test.AnotherTestingSystem do
   def aspect do
     Ecstatic.Aspect.new(with: [], without: [])
   end
-  def dispatch(entity, delta) do
+
+  def dispatch(entity,_changes,_delta) do
     pid = Application.get_env(:ecstatic, :test_pid) #spy
-    # TODO test delta
     c = Entity.find_component(entity, AnotherTestingComponent)
         |> AnotherTestingComponent.dec()
 
@@ -17,13 +17,4 @@ defmodule Test.AnotherTestingSystem do
     send pid, {__MODULE__, {entity, changes}}
     %Changes{updated: [c]}
   end
-  #reactive
-  def dispatch(entity,changes,delta) do
-    nil
-  end
-
-  def process(_,_) do
-    :ok
-  end
-
 end

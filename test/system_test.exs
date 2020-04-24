@@ -14,6 +14,11 @@ defmodule SystemTest do
     [entity_id: entity_id, components: components]
   end
 
+  def assert_tick_0() do
+    assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0, f: 0}},
+      %{state: %{var: 1, f: :infinity}} }] }}}, 50
+  end
+
   describe "basic structure" do
     @tag watchers: [OneSecInfinity]
     test "check changes structure", context do
@@ -50,14 +55,14 @@ defmodule SystemTest do
 
     @tag watchers: [OneSecInfinity]
     test "1 tick per second system" do
-      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: 1}} }] }}}, 50
+      assert_tick_0()
       assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 1050
       assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 1050
     end
 
     @tag watchers: [OneSecInfinity]
     test "ticks exactly per 1 sec" do
-      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: 1}} }] }}}, 50
+      assert_tick_0()
       refute_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 950
       assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 1050
       refute_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 950
@@ -66,14 +71,14 @@ defmodule SystemTest do
 
     @tag watchers: [OneSecFiveShots]
     test "limited ticks with helper" do
-      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: 1}} }] }}}, 50
+      assert_tick_0()
       periodic_assertions_reception(2..5, 1050)
     end
 
     #TODO. Test multiple watchers over the same component
     @tag watchers: [OneShot]
     test "just one reception" do
-      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: 1}} }] }}}, 50
+      assert_tick_0()
       refute_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 2500
     end
 
@@ -84,7 +89,7 @@ defmodule SystemTest do
 
     @tag watchers: [Couple]
     test "a non-single watcher" do
-      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: 1}} }] }}}, 50
+      assert_tick_0()
       assert_receive {AnotherTestingSystem, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: -1}} }] }}}, 50
     end
   end
@@ -112,15 +117,9 @@ defmodule SystemTest do
       end)
     end
 
-    def assert_tick_0() do
-      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0, f: 0}},
-        %{state: %{var: 1, f: :infinity}} }] }}}, 50
-    end
-
     @tag watchers: [OneSecFiveShots]
     test "5 ticks in 5 seconds, frec » 1Hz" do
-      assert_receive {:testing_system, {_entity, %{updated: [ {%{state: %{var: 0, f: 0}},
-        %{state: %{var: 1, f: :infinity}} }] }}}, 50
+      assert_tick_0()
       periodic_assertions_reception(2..5, 1050, 1)
       refute_receive {:testing_system, _}, 50
     end

@@ -30,7 +30,7 @@ defmodule Ecstatic.Ticker do
     {:ok, %Ecstatic.Ticker{}}
   end
 
-  defp update_last_tick_time(state, {c_id, system}, new_time \\ get_time) do
+  defp update_last_tick_time(state, {c_id, system}, new_time) do
     new_last_tick_time = Map.put(state.last_tick_time, {c_id, system}, new_time)
     %__MODULE__{state | last_tick_time: new_last_tick_time}
   end
@@ -40,7 +40,7 @@ defmodule Ecstatic.Ticker do
     %__MODULE__{state | ticks_left: new_ticks_left}
   end
 
-  defp delta(state, {c_id, system}, new_time \\ get_time) do
+  defp delta(state, {c_id, system}, new_time) do
     new_time - Map.get(state.last_tick_time, {c_id, system}, new_time)
   end
 
@@ -53,7 +53,7 @@ defmodule Ecstatic.Ticker do
           t = get_time()
           delta = delta(state, {c_id, system}, t)
           state = update_last_tick_time(state, {c_id, system}, t)
-          system.process(entity, delta)
+          system.process(entity, %Ecstatic.Changes{}, delta)
           case t_left do 
             :infinity -> {:noreply, state}
             _ -> {:noreply, update_ticks_left(state, {c_id, system}, (t_left - 1))}
