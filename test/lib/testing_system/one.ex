@@ -3,13 +3,11 @@ defmodule Test.TestingSystem.One do
   alias Ecstatic.Entity
   alias Test.{TestingSystem, TestingComponent}
   use Ecstatic.System
-  require Logger
   def aspect do
     Ecstatic.Aspect.new(with: [], without: [])
   end
 
   def dispatch(entity, _changes, delta) do
-    Logger.debug(inspect("TestingSystem.dispatch running"))
     pid = Application.get_env(:ecstatic, :test_pid) #spy
     c = Entity.find_component(entity, TestingComponent.One)
         |> TestingComponent.One.inc()
