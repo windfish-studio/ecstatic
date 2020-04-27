@@ -91,33 +91,6 @@ defmodule SystemTest do
     end
   end
 
-  describe "reactive" do
-    @tag watchers: [Reactive]
-    test "0 changes", context do
-      c = Map.get(context, :components)
-      |> Enum.at(0)
-      assert c.state.var == 0
-      refute_receive {OneSystem, _}, 2000
-    end
-    #todo: change testing paths and names
-    @tag watchers: [OneSecInfinity, Reactive]
-    test "Non reactive should trigger reactive", context do
-      entity_id = context.entity_id
-      assert_tick_0()
-      assert_receive {OneSystem, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 1050
-      assert_receive {ReactiveSystem, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 12}} }] }}}, 1050
-      IO.inspect(Store.Ets.get_entity(entity_id))
-      c = Store.Ets.get_entity(entity_id)
-      |> Entity.find_component(OneComponent)
-      assert c.state.var == 12
-    end
-
-    @tag watchers: [Reactive]
-    test "push reaction", _context do
-    end
-  end
-
-
   describe "delta on non-reactive watchers" do
     def periodic_assertions_reception(range, time_out, expected_f) do
       Enum.each(range, fn n ->
@@ -152,6 +125,32 @@ defmodule SystemTest do
     test "real time execution" do
       assert_tick_0()
       assert_graphically_fluid(2..10, 50)
+    end
+  end
+
+  describe "reactive" do
+    @tag watchers: [Reactive]
+    test "0 changes", context do
+      c = Map.get(context, :components)
+          |> Enum.at(0)
+      assert c.state.var == 0
+      refute_receive {OneSystem, _}, 2000
+    end
+
+    @tag watchers: [OneSecInfinity, Reactive]
+    test "Non reactive should trigger reactive", context do
+      entity_id = context.entity_id
+      assert_tick_0()
+      assert_receive {OneSystem, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 1050
+      assert_receive {ReactiveSystem, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 12}} }] }}}, 1050
+      c = Store.Ets.get_entity(entity_id)
+          |> Entity.find_component(OneComponent)
+      assert c.state.var == 12
+    end
+
+    @tag watchers: [Reactive]
+    test "push reaction", _context do
+
     end
   end
 end

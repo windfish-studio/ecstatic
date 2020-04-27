@@ -3,14 +3,17 @@ defmodule Test.TestingSystem.ReactiveSystem do
   alias Ecstatic.Entity
   alias Test.{TestingSystem.OneSystem, TestingComponent.OneComponent}
   use Ecstatic.System
+  require Logger
 
   @impl true
   def aspect do
-    Ecstatic.Aspect.new(with: [], without: [])
+    Logger.debug(inspect({"Aspect has been summoned"}))
+    %Ecstatic.Aspect{with: [OneComponent]}
   end
 
   @impl true
   def dispatch(entity, _changes, _delta \\ 0) do
+    Logger.debug(inspect({"Reactive system has been summoned"}))
     pid = Application.get_env(:ecstatic, :test_pid) #spy
     c = Entity.find_component(entity, OneComponent)
         |> OneComponent.x10()
