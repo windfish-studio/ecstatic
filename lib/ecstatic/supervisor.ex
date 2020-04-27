@@ -1,9 +1,9 @@
 defmodule Ecstatic.Supervisor do
   @moduledoc false
   use Supervisor
-  @type
+  @type reply() :: :ignore | {:error, any()} | {:ok, pid()}
 
-  @spec start_link()
+  @spec start_link(arg :: keyword(module())) :: reply()
   def start_link(arg \\ []) do
     Supervisor.start_link(__MODULE__, arg, name: __MODULE__)
   end

@@ -4,7 +4,8 @@ defmodule SystemTest do
   alias Test.TestingWatcher.{OneSecInfinity}
   alias Ecstatic.{Entity, Changes, Component}
   alias Test.TestingWatcher.{OneSecInfinity, OneSecFiveShots, OneShot, RealTime, Couple}
-
+  alias Test.TestingWatcher.Reactive.{Null, Reactive}
+  require Logger
   @moduletag :capture_log
 
   doctest TestingSystem.One #this is a system
@@ -39,8 +40,13 @@ defmodule SystemTest do
   end
 
   describe "reactive watcher over the testing systems" do
-
-
+    @tag watchers: [Reactive]
+    test "0 changes", context do
+      c = Map.get(context, :components)
+      |> Enum.at(0)
+      assert c.state.var == 0
+      refute_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: 1}} }] }}}, 2000
+    end
   end
 
   describe "non-reactive var" do
