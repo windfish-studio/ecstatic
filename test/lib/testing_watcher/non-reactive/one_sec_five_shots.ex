@@ -2,10 +2,10 @@ defmodule Test.TestingWatcher.NonReactive.OneSecFiveShots do
   @moduledoc false
   use Ecstatic.Watcher
 
-  alias Test.TestingSystem.One , as: TheSystem
-  alias Test.TestingComponent.One, as: TheComponent
+  alias Test.TestingSystem.OneSystem
+  alias Test.TestingComponent.OneComponent
 
-  watch TheComponent do
-    run TheSystem, [every: 1000, for: 5]
+  watch OneComponent do
+    run OneSystem, [every: 1000, for: 5]
   end
 end

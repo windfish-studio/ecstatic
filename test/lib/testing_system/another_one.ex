@@ -1,4 +1,4 @@
-defmodule Test.TestingSystem.AnotherOne do
+defmodule Test.TestingSystem.AnotherOneSystem do
   @moduledoc false
   alias Ecstatic.Entity
   alias Test.TestingComponent
@@ -12,10 +12,10 @@ defmodule Test.TestingSystem.AnotherOne do
   @impl true
   def dispatch(entity,_changes,_delta) do
     pid = Application.get_env(:ecstatic, :test_pid) #spy
-    c = Entity.find_component(entity, TestingComponent.AnotherOne)
-        |> TestingComponent.AnotherOne.dec()
+    c = Entity.find_component(entity, TestingComponent.AnotherOneComponent)
+        |> TestingComponent.AnotherOneComponent.dec()
 
-    changes = %Changes{updated: [{Entity.find_component(entity,TestingComponent.AnotherOne), c}]}
+    changes = %Changes{updated: [{Entity.find_component(entity,TestingComponent.AnotherOneComponent), c}]}
     send pid, {__MODULE__, {entity, changes}}
     %Changes{updated: [c]}
   end

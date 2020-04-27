@@ -1,7 +1,8 @@
 defmodule EntityTest do
   use ExUnit.Case, async: false
   alias Ecstatic.{Entity, Aspect, Changes}
-  alias Test.{TestingEntity,TestingComponent}
+  alias Test.TestingComponent.OneComponent
+  alias Test.TestingEntity
   alias TestHelper
 
   @moduletag :capture_log
@@ -26,7 +27,7 @@ defmodule EntityTest do
   end
 
   test "create Entity with a component" do
-    component = TestingComponent.One.new()
+    component = OneComponent.new()
     entity = TestingEntity.new([component])
     assert TestHelper.ecs_id?(entity.id)
     TestHelper.wait_receiver()
@@ -35,7 +36,7 @@ defmodule EntityTest do
   end
 
   test "adding component" do
-    component = TestingComponent.One.new()
+    component = OneComponent.new()
     entity = TestingEntity.new()
     |> Entity.add(component)
     TestHelper.wait_receiver()
@@ -45,35 +46,35 @@ defmodule EntityTest do
   end
 
   test "match aspect" do
-    aspect = Aspect.new(with: [TestingComponent.One], without: [])
-    assert aspect == %Aspect{with: [TestingComponent.One], without: []}
-    entity = TestingEntity.new([TestingComponent.One.new])
+    aspect = Aspect.new(with: [OneComponent], without: [])
+    assert aspect == %Aspect{with: [OneComponent], without: []}
+    entity = TestingEntity.new([OneComponent.new])
     TestHelper.wait_receiver()
     entity = Ecstatic.Store.Ets.get_entity(entity.id)
     assert Entity.match_aspect?(entity, aspect)
   end
 
   test "has component" do
-    component = TestingComponent.One.new()
+    component = OneComponent.new()
     entity = TestingEntity.new()
-    assert !Entity.has_component?(entity,TestingComponent.One)
+    assert !Entity.has_component?(entity,OneComponent)
     entity = Entity.add(entity, component)
     TestHelper.wait_receiver()
     entity = Ecstatic.Store.Ets.get_entity(entity.id)
-    assert Entity.has_component?(entity,TestingComponent.One)
+    assert Entity.has_component?(entity,OneComponent)
   end
 
   test "find component" do
-    component = TestingComponent.One.new()
+    component = OneComponent.new()
     entity = TestingEntity.new([component])
-    assert Entity.find_component(entity,TestingComponent.One) == nil
+    assert Entity.find_component(entity,OneComponent) == nil
     TestHelper.wait_receiver()
     entity = Ecstatic.Store.Ets.get_entity(entity.id)
-    assert Entity.find_component(entity,TestingComponent.One) == component
+    assert Entity.find_component(entity,OneComponent) == component
   end
 
   test "apply_changes" do
-    component = TestingComponent.One.new()
+    component = OneComponent.new()
     entity = TestingEntity.new([component])
     new_state = %{component.state | var: 42}
     new_component = %{component | state: new_state}

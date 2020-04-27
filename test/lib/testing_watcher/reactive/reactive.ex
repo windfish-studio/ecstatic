@@ -1,12 +1,15 @@
 defmodule Test.TestingWatcher.Reactive.Reactive do
   @moduledoc false
-  use Ecstatic.Watcher
-  alias Test.TestingSystem.One , as: TheSystem
-  alias Test.TestingComponent.AnotherOne, as: TheComponent
+  alias Test.TestingSystem.Reactive , as: TheSystem
+  alias Test.TestingComponent.One, as: TheComponent
   require Logger
 
-  watch TheComponent do
-    #funtion only returns a boolean. It means that it should really run
-    run TheSystem, when: fn entity, changes -> true end
+  def watchers do
+    [%{
+      callback: fn (entity, changes) -> true end,
+      component: TheComponent,
+      component_lifecycle_hook: :updated,
+      system: TheSystem
+    }]
   end
 end
