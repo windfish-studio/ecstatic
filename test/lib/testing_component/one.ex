@@ -16,4 +16,9 @@ defmodule Test.TestingComponent.One do
     new_state = %{component.state | f: f}
     %{component | state: new_state}
   end
+
+  def x10(component) do
+    new_state = %{component.state | var: component.state.var + 10}
+    %{component | state: new_state}
+  end
 end

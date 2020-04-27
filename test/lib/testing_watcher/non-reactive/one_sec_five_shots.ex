@@ -1,4 +1,4 @@
-defmodule Test.TestingWatcher.OneSecFiveShots do
+defmodule Test.TestingWatcher.NonReactive.OneSecFiveShots do
   @moduledoc false
   use Ecstatic.Watcher
 

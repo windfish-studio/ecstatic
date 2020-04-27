@@ -1,4 +1,4 @@
-defmodule Test.TestingWatcher.RealTime do
+defmodule Test.TestingWatcher.NonReactive.RealTime do
   @moduledoc false
   use Ecstatic.Watcher
   alias Test.TestingSystem.One , as: TheSystem

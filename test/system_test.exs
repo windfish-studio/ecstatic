@@ -1,10 +1,9 @@
 defmodule SystemTest do
   use ExUnit.Case, async: false
-  alias Test.TestingSystem
-  alias Test.TestingWatcher.{OneSecInfinity}
-  alias Ecstatic.{Entity, Changes, Component}
-  alias Test.TestingWatcher.{OneSecInfinity, OneSecFiveShots, OneShot, RealTime, Couple}
+  alias Test.{TestingComponent, TestingSystem}
+  alias Ecstatic.{Entity, Changes, Component, Store}
   alias Test.TestingWatcher.Reactive.{Null, Reactive}
+  alias Test.TestingWatcher.NonReactive.{HalfSecInfinity,OneSecInfinity, OneSecFiveShots, OneShot, RealTime, Couple}
   require Logger
   @moduletag :capture_log
 
@@ -15,9 +14,11 @@ defmodule SystemTest do
     [entity_id: entity_id, components: components]
   end
 
-  def assert_tick_0() do
-    assert_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 0, f: 0}},
-      %{state: %{var: 1, f: :infinity}} }] }}}, 50
+  def assert_tick_0(time_out \\ 50) do
+    assert_receive {TestingSystem.One, {_entity, %{updated: [
+                                                     {%{state: %{var: 0, f: 0}},
+                                                      %{state: %{var: 1, f: :infinity}} }
+                                                            ] }}}, time_out
   end
 
   describe "basic structure" do
@@ -36,16 +37,6 @@ defmodule SystemTest do
                                                                  %{state: %{var: 2}} }] }}}, 1050
       [{_,%Component{state: %{f: f}}}] = changes.updated
       assert_in_delta(f, 1, 0.01)
-    end
-  end
-
-  describe "reactive watcher over the testing systems" do
-    @tag watchers: [Reactive]
-    test "0 changes", context do
-      c = Map.get(context, :components)
-      |> Enum.at(0)
-      assert c.state.var == 0
-      refute_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: 1}} }] }}}, 2000
     end
   end
 
@@ -98,7 +89,47 @@ defmodule SystemTest do
       assert_tick_0()
       assert_receive {TestingSystem.AnotherOne, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: -1}} }] }}}, 50
     end
+
+    @tag watchers: [OneSecInfinity, HalfSecInfinity]
+    test "overlapping watchers are futile" do
+      assert_tick_0(100)
+      assert_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: 1}} }] }}}, 100
+
+      refute_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 300
+      assert_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 500
+
+      refute_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 400
+      assert_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 150
+      assert_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 150
+    end
   end
+
+  describe "reactive" do
+    @tag watchers: [Reactive]
+    test "0 changes", context do
+      c = Map.get(context, :components)
+      |> Enum.at(0)
+      assert c.state.var == 0
+      refute_receive {TestingSystem.One, _}, 2000
+    end
+
+    @tag watchers: [OneSecInfinity, Reactive]
+    test "Non reactive should not trigger reactive", context do
+      entity_id = context.entity_id
+      assert_tick_0()
+      assert_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 1050
+      refute_receive {TestingSystem.One, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 11}} }] }}}, 500
+      IO.inspect(Store.Ets.get_entity(entity_id))
+      c = Store.Ets.get_entity(entity_id)
+      |> Entity.find_component(TestingComponent.One)
+      assert c.state.var == 2
+    end
+
+    @tag watchers: [Reactive]
+    test "push reaction", context do
+    end
+  end
+
 
   describe "delta on non-reactive watchers" do
     def periodic_assertions_reception(range, time_out, expected_f) do

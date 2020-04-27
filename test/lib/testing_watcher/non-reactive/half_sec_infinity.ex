@@ -1,10 +1,10 @@
-defmodule Test.TestingWatcher.OneShot do
+defmodule Test.TestingWatcher.NonReactive.HalfSecInfinity do
   @moduledoc false
   use Ecstatic.Watcher
   alias Test.TestingSystem.One , as: TheSystem
   alias Test.TestingComponent.One, as: TheComponent
 
   watch TheComponent do
-    run TheSystem, [every: :continuous, for: 1]
+    run TheSystem, [every: 500, for: :infinity]
   end
 end

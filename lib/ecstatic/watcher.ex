@@ -74,6 +74,7 @@ defmodule Ecstatic.Watcher do
           component_lifecycle_hook: :updated,
           system: unquote(system)
         }
+#        Module.get_attribute(__MODULE__, :current_component)
       end
 
     quote do
