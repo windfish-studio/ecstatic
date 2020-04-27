@@ -1,7 +1,7 @@
 defmodule SystemTest do
   use ExUnit.Case, async: false
   alias Test.TestingComponent.OneComponent
-  alias Test.TestingSystem.{OneSystem, AnotherOneSystem}
+  alias Test.TestingSystem.{OneSystem, AnotherOneSystem, ReactiveSystem}
   alias Ecstatic.{Entity, Changes, Component, Store}
   alias Test.TestingWatcher.Reactive.{Reactive}
   alias Test.TestingWatcher.NonReactive.{OneSecInfinity, OneSecFiveShots, OneShot, RealTime, Couple}
