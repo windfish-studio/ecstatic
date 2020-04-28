@@ -1,15 +1,15 @@
 defmodule Test.TestingWatcher.Reactive.Reactive do
   @moduledoc false
-  alias Test.TestingSystem.Reactive , as: TheSystem
-  alias Test.TestingComponent.One, as: TheComponent
+  alias Test.TestingSystem.ReactiveSystem
+  alias Test.TestingComponent.OneComponent
   require Logger
 
   def watchers do
     [%{
       callback: fn (entity, changes) -> true end,
-      component: TheComponent,
+      component: OneComponent,
       component_lifecycle_hook: :updated,
-      system: TheSystem
+      system: ReactiveSystem
     }]
   end
 end

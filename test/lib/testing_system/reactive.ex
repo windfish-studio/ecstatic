@@ -18,7 +18,7 @@ defmodule Test.TestingSystem.ReactiveSystem do
     c = Entity.find_component(entity, OneComponent)
         |> OneComponent.x10()
     changes = %Changes{updated: [{Entity.find_component(entity,OneComponent), c}]}
-    send pid, {OneSystem, {entity, changes}}
+    send pid, {__MODULE__, {entity, changes}}
     %Changes{updated: [c]}
   end
 end

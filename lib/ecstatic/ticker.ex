@@ -6,7 +6,7 @@ defmodule Ecstatic.Ticker do
 
 @type t :: %__MODULE__{
   ticks_left: %{system_component_pair => non_neg_integer()},
-  last_tick_time: %{system_component_pair => non_neg_integer()}
+  last_tick_time: %{system_component_pair => float()}
 }
   def get_time() do
     t=DateTime.utc_now()
@@ -45,7 +45,7 @@ defmodule Ecstatic.Ticker do
   end
 
   def handle_info({:tick, c_id, e_id, system}, state) do
-    case Map.get(state.ticks_left, {c_id, system}, nil) do  #this nil will trigger the error
+    case Map.get(state.ticks_left, {c_id, system}, nil) do  #this nil will trigger an error on purpose
       t_left 
         when t_left == :infinity 
         when (is_number(t_left) and t_left > 0) ->

@@ -19,6 +19,8 @@ defmodule Ecstatic.Watcher do
   end
 
   defmacro watch(component, do: systems_code_block) do
+    require Logger
+    Logger.debug(inspect({"watch ing: ", systems_code_block}, pretty: true))
     quote do
       Module.put_attribute(__MODULE__, :current_component, unquote(component))
       unquote(systems_code_block)

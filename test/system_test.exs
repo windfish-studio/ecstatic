@@ -138,9 +138,21 @@ defmodule SystemTest do
     end
 
     @tag watchers: [OneSecInfinity, Reactive]
+    test "Reactive should't trigger itself", context do
+       entity_id = context.entity_id
+       assert_tick_0() #OnSecInfinity triggers Reactive who endlessly triggers itself
+       assert_receive {ReactiveSystem, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 11}} }] }}}, 50
+       refute_receive {ReactiveSystem, {_entity, %{updated: [ {%{state: %{var: 11}}, %{state: %{var: 21}} }] }}}, 2000
+       c = Store.Ets.get_entity(entity_id)
+           |> Entity.find_component(OneComponent)
+       assert c.state.var == 11
+    end
+
+    @tag watchers: [OneSecInfinity, Reactive]
     test "Non reactive should trigger reactive", context do
       entity_id = context.entity_id
       assert_tick_0()
+      assert_receive {ReactiveSystem, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 12}} }] }}}, 1050
       assert_receive {OneSystem, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 1050
       assert_receive {ReactiveSystem, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 12}} }] }}}, 1050
       c = Store.Ets.get_entity(entity_id)
