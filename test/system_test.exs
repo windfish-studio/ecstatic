@@ -10,7 +10,7 @@ defmodule SystemTest do
   doctest OneSystem #this is a system
 
   setup context do
-    {entity_id, components, _pids} = TestHelper.initialize(context[:watchers])
+    {entity_id, components, _pids} = TestHelper.initialize(context[:systems])
     [entity_id: entity_id, components: components]
   end
 
@@ -22,7 +22,7 @@ defmodule SystemTest do
   end
 
   describe "basic structure" do
-    @tag watchers: [OneSecInfinity]
+    @tag systems: [OneSystem]
     test "check changes structure", context do
       {entity_id, _components} = {context.entity_id, context.components}
       #tick 0
@@ -129,7 +129,7 @@ defmodule SystemTest do
   end
 
   describe "reactive" do
-    @tag watchers: [Reactive]
+    @tag aspects: [Reactive]
     test "0 changes", context do
       c = Map.get(context, :components)
           |> Enum.at(0)

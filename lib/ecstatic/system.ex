@@ -1,5 +1,5 @@
 defmodule Ecstatic.System do
-  alias Ecstatic.{Aspect, Changes, Entity}
+  alias Ecstatic.{Aspect, Changes, Entity, Store.Aspect}
   @type optional_change :: Changes.t() | nil
   @callback aspect() :: Aspect.t()
   @callback dispatch(Entity.t(), optional_change, delta :: number()) :: Changes.t()
@@ -10,6 +10,11 @@ defmodule Ecstatic.System do
       alias Ecstatic.{Aspect, Changes, Component, Entity, EventSource}
       @type dispatch_fun :: (() -> number())
       @type event_push :: :ok
+
+      @spec new(aspect :: Aspect.t()) :: :ok
+      def new(aspect) do
+        Store.Aspect.insert(aspect)
+      end
 
       @spec process(entity :: Entity.t(), changes :: Changes.t(), delta :: number()) :: event_push()
       def process(entity, changes, delta) do

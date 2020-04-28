@@ -6,7 +6,7 @@ defmodule Test.TestingSystem.OneSystem do
 
   @impl true
   def aspect do
-    Ecstatic.Aspect.new(with: [], without: [])
+    Test.TestingAspect.NonReactive.OneSecInfinity
   end
 
   @impl true

@@ -14,7 +14,12 @@ defmodule Ecstatic.Supervisor do
       {Ecstatic.EventSource, []},
       {Ecstatic.EventProducer, []}
     ]
-    Ecstatic.Store.Watcher.new(Keyword.get(arg, :watchers, []))
+    Keyword.get(arg, :systems, [])
+    |> Enum.map(fn system ->
+                            require Logger
+                            Logger.debug(inspect({"Supervisor init, aspect is: ", system.aspect}))
+                            system.aspect.new()
+                end)
     Supervisor.init(children, strategy: :one_for_one)
   end
 end

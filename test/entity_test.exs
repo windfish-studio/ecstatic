@@ -45,15 +45,6 @@ defmodule EntityTest do
     assert entity.components == [component]
   end
 
-  test "match aspect" do
-    aspect = Aspect.new(with: [OneComponent], without: [])
-    assert aspect == %Aspect{with: [OneComponent], without: []}
-    entity = TestingEntity.new([OneComponent.new])
-    TestHelper.wait_receiver()
-    entity = Ecstatic.Store.Ets.get_entity(entity.id)
-    assert Entity.match_aspect?(entity, aspect)
-  end
-
   test "has component" do
     component = OneComponent.new()
     entity = TestingEntity.new()

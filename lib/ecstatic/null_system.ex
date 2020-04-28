@@ -1,7 +1,7 @@
 defmodule Ecstatic.NullSystem do
   @moduledoc false
   use Ecstatic.System
-  def aspect, do: %Aspect{}
+  def aspect, do: %Ecstatic.Aspect{}
   def dispatch(_entity, _changes, _delta) do
     %Ecstatic.Changes{}
   end
