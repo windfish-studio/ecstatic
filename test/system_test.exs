@@ -1,8 +1,8 @@
 defmodule SystemTest do
   use ExUnit.Case, async: false
-  alias Test.TestingComponent.OneComponent
+  alias Test.TestingComponent.{OneComponent, AnotherOneComponent}
   alias Test.TestingSystem.{OneSystem, AnotherOneSystem, ReactiveSystem}
-  alias Ecstatic.{Entity, Changes, Component, Store}
+  alias Ecstatic.{Entity, Changes, Component, Store, Aspect}
   alias Test.TestingWatcher.Reactive.{Reactive}
   alias Test.TestingWatcher.NonReactive.{OneSecInfinity, OneSecFiveShots, OneShot, RealTime, Couple}
   @moduletag :capture_log
@@ -36,7 +36,20 @@ defmodule SystemTest do
                                                                {%{state: %{var: 1, f: :infinity}},
                                                                  %{state: %{var: 2}} }] }}}, 1050
       [{_,%Component{state: %{f: f}}}] = changes.updated
-      assert_in_delta(f, 1, 0.01)
+       assert_in_delta(f, 1, 0.01)
+    end
+
+    test "new timer aspect" do
+      aspect = Aspect.new([OneComponent], [AnotherOneComponent], [every: 1000, for: :infinity])
+      assert aspect == %Aspect{with: [OneComponent], without: [AnotherOneComponent], when: [every: 1000, for: :infinity]}
+    end
+
+    test "new conditional aspect" do
+      aspect = Aspect.new([OneComponent, AnotherComponent], [], fn (_entity,_changes) -> true end)
+      %Aspect{with: with, without: without, when: fun} = aspect
+      assert with == [OneComponent, AnotherComponent]
+      assert without == []
+      assert is_function(fun)
     end
   end
 

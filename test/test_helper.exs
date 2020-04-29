@@ -1,5 +1,6 @@
 ExUnit.start()
 defmodule TestHelper do
+  alias Ecstatic.Aspect
   #UUID.info does the same. Replace usages by this one
   def ecs_id?(string) do
     bool = String.length(string) == 36 &&
@@ -23,7 +24,9 @@ defmodule TestHelper do
       timeout_time_milisec -> :time_out
     end
   end
-
+  def initialize(nil) do
+    initialize([])
+  end
   def initialize(systems \\ []) do
     {:ok, pids} = start_supervisor_with_monitor([systems: systems])
     components = [Test.TestingComponent.OneComponent.new(), Test.TestingComponent.AnotherOneComponent.new()]
@@ -31,11 +34,13 @@ defmodule TestHelper do
     {entity.id,components, pids}
   end
 
-
   def start_supervisor_with_monitor(arg \\ []) do
     Application.put_env(:ecstatic, :test_pid, self())               #monitor listener
     {:ok, supervisor} = Ecstatic.Supervisor.start_link(arg)
     {:ok, consumer} = Test.TestingEventConsumer.start_link(self())  #monitor speaker
     {:ok, [supervisor, consumer]}
+  end
+  def aspect_one_sec_infinity do
+    Aspect.new([Test.TestingComponent.OneComponent],[],[every: 1000, for: :infinity])
   end
 end

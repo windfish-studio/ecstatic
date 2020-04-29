@@ -11,11 +11,6 @@ defmodule Ecstatic.System do
       @type dispatch_fun :: (() -> number())
       @type event_push :: :ok
 
-      @spec new(aspect :: Aspect.t()) :: :ok
-      def new(aspect) do
-        Store.Aspect.insert(aspect)
-      end
-
       @spec process(entity :: Entity.t(), changes :: Changes.t(), delta :: number()) :: event_push()
       def process(entity, changes, delta) do
         function = fn -> dispatch(entity, changes, delta) end

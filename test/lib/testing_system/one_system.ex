@@ -5,8 +5,8 @@ defmodule Test.TestingSystem.OneSystem do
   use Ecstatic.System
 
   @impl true
-  def aspect do
-    Test.TestingAspect.NonReactive.OneSecInfinity
+  def aspect() do
+    TestHelper.aspect_one_sec_infinity()
   end
 
   @impl true

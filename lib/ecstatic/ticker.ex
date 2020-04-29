@@ -30,47 +30,50 @@ defmodule Ecstatic.Ticker do
     {:ok, %Ecstatic.Ticker{}}
   end
 
-  defp update_last_tick_time(state, {c_id, system}, new_time) do
-    new_last_tick_time = Map.put(state.last_tick_time, {c_id, system}, new_time)
+  defp update_last_tick_time(state, system, new_time) do
+    new_last_tick_time = Map.put(state.last_tick_time, system, new_time)
     %__MODULE__{state | last_tick_time: new_last_tick_time}
   end
 
-  defp update_ticks_left(state, {c_id, system}, new_ticks_left) do
-    new_ticks_left = Map.put(state.ticks_left, {c_id, system}, new_ticks_left)
+  defp update_ticks_left(state, system, new_ticks_left) do
+    new_ticks_left = Map.put(state.ticks_left, system, new_ticks_left)
     %__MODULE__{state | ticks_left: new_ticks_left}
   end
 
-  defp delta(state, {c_id, system}, new_time) do
-    new_time - Map.get(state.last_tick_time, {c_id, system}, new_time)
+  defp delta(state, system, new_time) do
+    new_time - Map.get(state.last_tick_time, system, new_time)
   end
 
-  def handle_info({:tick, c_id, e_id, system}, state) do
-    case Map.get(state.ticks_left, {c_id, system}, nil) do  #this nil will trigger an error on purpose
+  def handle_info({:tick, e_id, system}, state) do
+    case Map.get(state.ticks_left, system, nil) do  #this nil will trigger an error on purpose
       t_left 
         when t_left == :infinity 
         when (is_number(t_left) and t_left > 0) ->
           entity = Ecstatic.Store.Ets.get_entity(e_id)
           t = get_time()
-          delta = delta(state, {c_id, system}, t)
-          state = update_last_tick_time(state, {c_id, system}, t)
+          delta = delta(state, system, t)
+          state = update_last_tick_time(state, system, t)
           system.process(entity, %Ecstatic.Changes{}, delta)
           case t_left do 
             :infinity -> {:noreply, state}
-            _ -> {:noreply, update_ticks_left(state, {c_id, system}, (t_left - 1))}
+            _ -> {:noreply, update_ticks_left(state, system, (t_left - 1))}
           end
       0 ->
-        {:noreply, update_ticks_left(state, {c_id, system}, :stopped)}
+        {:noreply, update_ticks_left(state, system, :stopped)}
       :stopped -> 
         {:noreply, state}
     end
   end
 
-  def handle_info({:start_tick, c_id, e_id, system, [every: _interval, for: ticks]}, state) do
-    send(self(), {:tick, c_id, e_id, system})
-    {:noreply, update_ticks_left(state, {c_id, system}, ticks)}
+  def handle_info({:start_tick, entity_id, system}, state) do
+    send(self(), {:tick, entity_id , system})
+    case system.aspect().when do
+      [every: _, for: ticks] -> {:noreply, update_ticks_left(state, system, ticks)}
+      _ -> nil
+    end
   end
 
-  def handle_info({:stop_tick, c_id, system}, state) do
-    {:noreply, update_ticks_left(state, {c_id, system}, :stopped)}
+  def handle_info({:stop_tick, system}, state) do
+    {:noreply, update_ticks_left(state, system, :stopped)}
   end
 end
