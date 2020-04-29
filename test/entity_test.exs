@@ -20,7 +20,7 @@ defmodule EntityTest do
     assert entity.components == []
   end
 
-  test "create default 2 TestingEntity" do
+  test "create default TestingEntity v2" do
     entity = TestingEntity.new()
     assert TestHelper.ecs_id?(entity.id)
     assert entity.components == []

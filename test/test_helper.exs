@@ -43,4 +43,12 @@ defmodule TestHelper do
   def aspect_one_sec_infinity do
     Aspect.new([Test.TestingComponent.OneComponent],[],[every: 1000, for: :infinity])
   end
+
+  def aspect_real_time do
+    Aspect.new([Test.TestingComponent.OneComponent],[],[every: :continuous, for: :infinity])
+  end
+
+  def aspect_one_sec_five_shots do
+    %Aspect{with: [Test.TestingComponent.OneComponent], when: [every: :continuous, for: :infinity]}
+  end
 end
