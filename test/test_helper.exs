@@ -49,6 +49,6 @@ defmodule TestHelper do
   end
 
   def aspect_one_sec_five_shots do
-    %Aspect{with: [Test.TestingComponent.OneComponent], when: [every: :continuous, for: :infinity]}
+    %Aspect{with: [Test.TestingComponent.OneComponent], trigger_condition: [every: 1000, for: 5]}
   end
 end

@@ -1,4 +1,4 @@
-defmodule Test.TestingSystem.OneSecFiveShotsSystem do
+defmodule Test.TestingSystem.DefaultSystem do
   @moduledoc false
   alias Ecstatic.Entity
   alias Test.TestingComponent.{OneComponent, AnotherOneComponent}
@@ -6,7 +6,7 @@ defmodule Test.TestingSystem.OneSecFiveShotsSystem do
 
   @impl true
   def aspect() do
-    TestHelper.aspect_one_sec_five_shots()
+    %Aspect{}
   end
 
   @impl true

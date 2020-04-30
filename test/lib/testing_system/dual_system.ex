@@ -1,4 +1,4 @@
-defmodule Test.TestingSystem.OneSecFiveShotsSystem do
+defmodule Test.TestingSystem.DualSystem do
   @moduledoc false
   alias Ecstatic.Entity
   alias Test.TestingComponent.{OneComponent, AnotherOneComponent}
@@ -6,7 +6,7 @@ defmodule Test.TestingSystem.OneSecFiveShotsSystem do
 
   @impl true
   def aspect() do
-    TestHelper.aspect_one_sec_five_shots()
+    TestHelper.aspect_one_sec_infinity()
   end
 
   @impl true
@@ -15,8 +15,12 @@ defmodule Test.TestingSystem.OneSecFiveShotsSystem do
     c = Entity.find_component(entity, OneComponent)
         |> OneComponent.inc()
         |> OneComponent.frequency(delta)
-    changes = %Changes{updated: [{Entity.find_component(entity,OneComponent), c}]}
+    c2 = Entity.find_component(entity, OneComponent)
+         |> AnotherOneComponent.dec()
+    changes = %Changes{updated: [
+                         {Entity.find_component(entity,OneComponent), c},
+                         {Entity.find_component(entity,AnotherOneComponent), c2}]}
     send pid, {__MODULE__, {entity, changes}}
-    %Changes{updated: [c]}
+    %Changes{updated: [c, c2]}
   end
 end

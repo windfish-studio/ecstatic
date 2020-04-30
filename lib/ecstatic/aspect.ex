@@ -4,16 +4,21 @@ defmodule Ecstatic.Aspect do
 
   defstruct with: [],
             without: [],
-            when: [every: :continuous, for: 1]
+            trigger_condition: [every: :continuous, for: 1]
 
   @type timer_specs :: [every: number | :continuous,
                          for: timeout()] #todo: is 0 or :stopped allowed?
-  @type react_specs :: fun()            #todo: define better this function
+
+  @type changes_types :: :attached | :removed | :updated
+  @type lifecycle_hook :: MapSet.t()      #todo: define better this set
+  @type react_fun :: fun()                #todo: define better this function
+  @type react_specs :: [fun: react_fun(), lifecycle: lifecycle_hook]
+
 
   @type t :: %Ecstatic.Aspect{
                with: [Ecstatic.Component.t()],
                without: [Ecstatic.Component.t()],
-               when: timer_specs | react_specs
+               trigger_condition: timer_specs | react_specs
              }
 
   @spec new([Ecstatic.Component.t()], [Ecstatic.Component.t()], timer_specs | react_specs) :: t()
@@ -23,7 +28,7 @@ defmodule Ecstatic.Aspect do
     %Ecstatic.Aspect{
       with: with_components,
       without: without_components,
-      when: cond
+      trigger_condition: cond
     }
   end
 end

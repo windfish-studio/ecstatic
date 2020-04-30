@@ -67,7 +67,7 @@ defmodule Ecstatic.Ticker do
 
   def handle_info({:start_tick, entity_id, system}, state) do
     send(self(), {:tick, entity_id , system})
-    case system.aspect().when do
+    case system.aspect().trigger_condition do
       [every: _, for: ticks] -> {:noreply, update_ticks_left(state, system, ticks)}
       _ -> nil
     end

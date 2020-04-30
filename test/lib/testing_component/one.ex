@@ -2,6 +2,11 @@ defmodule Test.TestingComponent.OneComponent do
   @moduledoc false
   use Ecstatic.Component
   @default_state %{var: 0, f: 0}
+#
+#  def new(state) do
+#    Component.new(__MODULE__,state)
+#  end
+
   def inc(component) do
     new_state = %{component.state | var: component.state.var + 1}
     %{component | state: new_state}
