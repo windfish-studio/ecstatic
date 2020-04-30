@@ -11,8 +11,6 @@ defmodule Ecstatic.Store.System do
   def new(systems \\ []) do
     :ets.new(__MODULE__, [:named_table, :protected, :set])
     :ets.insert(__MODULE__, {:systems, systems})
-    require Logger
-    Logger.debug(inspect({"new Store Systems. system added: ", systems}))
     :ok
   end
 

@@ -36,17 +36,23 @@ defmodule Ecstatic.EventConsumer do
 
   # I can do [event] because I only ever ask for one.
   # event => {entity, %{changed: [], new: [], deleted: []}}
-
   def handle_events([{entity, %Changes{} = changes} = _event], _from, %{systems: systems} = state) do
     Logger.debug(Kernel.inspect(changes, pretty: true))
-    systems
-    |> Enum.filter(valid_components?(changes)) #discard systems with wrong components
-    |> Enum.filter(valid_condition?(entity, changes))
+    f_components = valid_components?(changes)
+    f_cond = valid_condition?(entity, changes)
+
+    Logger.debug(inspect({"consumer, possible systems: ", systems, changes}, pretty: true))
+
+    systems = systems
+    |> Enum.filter(f_components) #discard systems with wrong components
+    Logger.debug(inspect({"consumer, filtered systems by components: ", systems}))
+    systems = systems
+    |> Enum.filter(f_cond)
+
+    Logger.debug(inspect({"consumer, filtered systems: ", systems}))
 
     changes = merge_changes(entity, changes)
     new_entity = Entity.apply_changes(entity, changes)
-
-    Logger.debug(inspect({"consumer, filtered systems: ", systems}))
     #TODO: we must identify from which system the changes are coming
     Enum.each(systems, fn system_mod ->
       case fields_not_empty(changes) do
@@ -73,29 +79,36 @@ defmodule Ecstatic.EventConsumer do
 
   def valid_components?(changes) do
     fn system ->
-      Logger.debug(inspect({"change contains input", system}))
       components = reduce_changes(changes)
+      Logger.debug(inspect({"filtered components: ", components}, pretty: true))
       Enum.all?(system.aspect().with, fn component ->
-        Enum.any?(components, fn c -> component == c.type() end)
+        Enum.any?(components, fn c -> component == c end)
       end)
       |> Kernel.&&(Enum.any?(system.aspect().without, fn component ->
-        Enum.all?(components, fn c -> component == c.type() end)
+        Enum.all?(components, fn c -> component == c end)
       end))
     end
   end
 
   defp reduce_changes(changes) do
     changes.attached ++ changes.updated ++ changes.removed
+    |> Enum.map(fn c -> c.type end)
+    |> MapSet.new()
   end
 
-  def valid_condition?(entity, changes) do
+  defp valid_condition?(entity, changes) do
     fn system_m ->
       case Map.get(system_m.aspect(), :trigger_condition, nil) do
-        nil -> raise "Event_consumer: the system " <> to_string(system_m) <> " has no aspect"
-        [every: _period, for: _n_times] -> true #for instance, with for: 0, the trigger should receive tick stop
+        nil ->
+          raise "Event_consumer: the system " <> to_string(system_m) <> " has no aspect"
+        [every: _period, for: _n_times] ->
+          Logger.debug("the system on top matches because is non_reactive")
+         true #for instance, with for: 0, the trigger should receive tick stop
         [fun: fun, lifecycle: lifecycle] ->
-          detect_changes_type(changes, lifecycle)
-            |> Kernel.&&(fun)
+          b = detect_changes_type(changes, lifecycle)
+          |> Kernel.&&(fun)
+        _ ->
+          raise "Unexpected aspect"
       end
     end
   end

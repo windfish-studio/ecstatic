@@ -7,7 +7,6 @@ defmodule Test.TestingSystem.ReactiveSystem do
 
   @impl true
   def aspect do
-    Logger.debug(inspect({"Aspect has been summoned"}))
     %Ecstatic.Aspect{with: [OneComponent]}
   end
 

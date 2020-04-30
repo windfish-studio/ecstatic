@@ -14,8 +14,6 @@ defmodule Ecstatic.Supervisor do
       {Ecstatic.EventSource, []},
       {Ecstatic.EventProducer, []}
     ]
-    require Logger
-    Logger.debug(inspect({"Supervisor init, arg is: ", arg}))
     Keyword.get(arg, :systems, [])
     |> Ecstatic.Store.System.new()
     Supervisor.init(children, strategy: :one_for_one)
