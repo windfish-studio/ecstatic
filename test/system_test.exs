@@ -1,7 +1,7 @@
 defmodule SystemTest do
   use ExUnit.Case, async: false
   alias Test.TestingComponent.{OneComponent, AnotherOneComponent}
-  alias Test.TestingSystem.{OneSystem, AnotherOneSystem, ReactiveSystem,
+  alias Test.TestingSystem.{OneSystem, ReactiveSystem,
                             RealTimeSystem, OneSecFiveShotsSystem, DualSystem, DefaultSystem}
   alias Ecstatic.{Entity, Changes, Component, Store, Aspect}
   @moduletag :capture_log
@@ -36,7 +36,7 @@ defmodule SystemTest do
   end
 
   describe "basic structure" do
-    @tag :skip
+    
     @tag systems: [OneSystem]
     test "check changes structure", context do
       {entity_id, _components} = {context.entity_id, context.components}
@@ -54,7 +54,7 @@ defmodule SystemTest do
        assert_in_delta(f, 1, 0.01)
     end
 
-    @tag :skip
+    
     test "new timer aspect" do
       aspect = Aspect.new([OneComponent], [AnotherOneComponent], [every: 1000, for: :infinity])
       assert aspect == %Aspect{with: [OneComponent],
@@ -62,7 +62,7 @@ defmodule SystemTest do
                                 trigger_condition: [every: 1000, for: :infinity]}
     end
 
-    @tag :skip
+    
     test "new conditional aspect" do
       aspect = Aspect.new([OneComponent, AnotherComponent],
                           [],
@@ -78,7 +78,7 @@ defmodule SystemTest do
   end
 
   describe "non-reactive var" do
-    @tag :skip
+    
     @tag systems: [OneSystem]
     test "1 tick per second system" do
       assert_tick_0(OneSystem)
@@ -86,7 +86,7 @@ defmodule SystemTest do
       assert_receive {OneSystem, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 1050
     end
 
-    @tag :skip
+    
     @tag systems: [OneSystem]
     test "ticks exactly per 1 sec" do
       assert_tick_0(OneSystem)
@@ -96,28 +96,27 @@ defmodule SystemTest do
       assert_receive {OneSystem, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 1050
     end
 
-    @tag :skip
+    
     @tag systems: [OneSecFiveShotsSystem]
     test "limited ticks with helper" do
       assert_tick_0(OneSecFiveShotsSystem)
       periodic_assertions_reception(OneSecFiveShotsSystem, 2..5, 1050)
     end
 
-    #TODO. Test multiple systems over the same component
-    @tag :skip
+    
     @tag systems: [DefaultSystem]
     test "just one reception" do
       assert_tick_0(DefaultSystem)
       refute_receive {DefaultSystem, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 2500
     end
 
-    @tag :skip
+    
     @tag systems: [RealTimeSystem]
     test "real time execution" do
       periodic_assertions_reception(RealTimeSystem, 1..10, 50)
     end
 
-    @tag :skip
+    
     @tag systems: [DualSystem]
     test "2 components 1 system" do
       {Test.TestingSystem.OneSystem, {%Ecstatic.Entity{components: [%Ecstatic.Component
@@ -138,6 +137,17 @@ defmodule SystemTest do
                                                 {%{state: %{var: 0}}, %{state: %{var: -1}} }
                                             ] }}}, 50
     end
+
+    @tag systems: [OneSystem, DefaultSystem]
+    test "2 systems 1 component. Each system only triggers itself" do
+      #DefaultSystem is triggering OneSystem after 1 sec
+      assert_tick_0(OneSystem)
+      assert_receive {DefaultSystem, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 50
+      refute_receive {_system, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 850
+      assert_receive {OneSystem, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 150
+      refute_receive {_system, {_entity, %{updated: [ {%{state: %{var: 3}}, %{state: %{var: 4}} }] }}}, 850
+      assert_receive {OneSystem, {_entity, %{updated: [ {%{state: %{var: 3}}, %{state: %{var: 4}} }] }}}, 150
+    end
   end
 
   describe "delta on non-reactive systems" do
@@ -154,7 +164,7 @@ defmodule SystemTest do
       end)
     end
 
-    @tag :skip
+    
     @tag systems: [OneSecFiveShotsSystem]
     test "5 ticks in 5 seconds, frec » 1Hz" do
       assert_tick_0(OneSecFiveShotsSystem)
@@ -162,8 +172,8 @@ defmodule SystemTest do
       refute_receive {OneSecFiveShotsSystem, _}, 50
     end
 
+    
     @tag systems: [RealTimeSystem]
-    @tag :skip
     test "real time execution" do
       assert_tick_0(RealTimeSystem)
       assert_graphically_fluid(2..10, 50)
@@ -171,7 +181,7 @@ defmodule SystemTest do
   end
 
   describe "reactive" do
-    @tag :skip
+    
     @tag systems: [ReactiveSystem]
     test "0 changes", context do
       c = Map.get(context, :components)
@@ -180,8 +190,10 @@ defmodule SystemTest do
       refute_receive {OneSystem, _}, 2000
     end
 
+
+
     @tag systems: [OneSystem, ReactiveSystem]
-    test "Reactive should't trigger itself", context do
+    test "Reactive that triggers itself", context do
        entity_id = context.entity_id
        assert_tick_0(ReactiveSystem) #OnSecInfinity triggers Reactive who endlessly triggers itself
        assert_receive {ReactiveSystem, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 11}} }] }}}, 50

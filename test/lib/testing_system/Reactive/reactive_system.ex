@@ -8,7 +8,7 @@ defmodule Test.TestingSystem.ReactiveSystem do
   @impl true
   def aspect do
     %Ecstatic.Aspect{with: [OneComponent], trigger_condition: [
-                                              fun: fn system_m -> system_m != __MODULE__ end,
+                                              fun: fn system_m, entity, changes -> system_m != __MODULE__ end,
                                               lifecycle: :updated]}
   end
 

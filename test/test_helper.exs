@@ -24,9 +24,9 @@ defmodule TestHelper do
       timeout_time_milisec -> :time_out
     end
   end
-  def initialize(nil) do
-    initialize([])
-  end
+#  def initialize(nil) do
+#    initialize([])
+#  end
   def initialize(systems \\ []) do
     {:ok, pids} = start_supervisor_with_monitor([systems: systems])
     components = [Test.TestingComponent.OneComponent.new(), Test.TestingComponent.AnotherOneComponent.new()]

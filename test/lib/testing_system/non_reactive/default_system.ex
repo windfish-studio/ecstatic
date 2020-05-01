@@ -1,6 +1,6 @@
 defmodule Test.TestingSystem.DefaultSystem do
   @moduledoc false
-  alias Ecstatic.Entity
+  alias Ecstatic.{Entity, Aspect}
   alias Test.TestingComponent.{OneComponent, AnotherOneComponent}
   use Ecstatic.System
 

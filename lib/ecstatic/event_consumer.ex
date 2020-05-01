@@ -3,7 +3,7 @@ defmodule Ecstatic.EventConsumer do
   use GenStage
   require Logger
 
-  alias Ecstatic.{Entity, Changes}
+  alias Ecstatic.{Entity, Changes, Aspect}
 
   def start_link(entity) do
     GenStage.start_link(__MODULE__, entity)
@@ -38,40 +38,31 @@ defmodule Ecstatic.EventConsumer do
   # event => {entity, %{changed: [], new: [], deleted: []}}
   def handle_events([{entity, %Changes{} = changes} = _event], _from, %{systems: systems} = state) do
     Logger.debug(Kernel.inspect(changes, pretty: true))
-    f_components = valid_components?(changes)
-    f_cond = valid_condition?(entity, changes)
-
-#    Logger.debug(inspect({"consumer, possible systems: ", systems, changes}, pretty: true))
-
-    systems = systems
-    |> Enum.filter(f_components) #discard systems with wrong components
-#    Logger.debug(inspect({"consumer, filtered systems by components: ", systems}))
-#    systems = systems
-    |> Enum.filter(f_cond)
-
+    systems = Enum.filter(systems, valid_components?(changes)) #discard systems with wrong components
+    changes = merge_changes(entity, changes)  #cannot reduce complex changes in valid_components
+    systems = Enum.filter(systems, valid_condition?(entity, changes))
+    |> Enum.filter(discard_non_reactive_on_updated(changes))
     Logger.debug(inspect({"consumer, filtered systems: ", systems}))
-
-    changes = merge_changes(entity, changes)
     new_entity = Entity.apply_changes(entity, changes)
-    #TODO: we must identify from which system the changes are coming
     Enum.each(systems, fn system_mod ->
-      case fields_not_empty(changes) do
-        [:attached] ->
-          send(state.ticker, {:start_tick, entity.id, system_mod})
-        [:updated] ->
-          case system_mod.aspect().trigger_condition do
-            [every: t, for: _] when is_number(t) ->
-               Process.send_after(state.ticker, {:tick, entity.id, system_mod}, t)
-             _ ->
-               send(state.ticker, {:tick, entity.id, system_mod})
+      if Aspect.is_reactive(system_mod.aspect()) do
+       system_mod.process(new_entity, changes)
+      else
+        Enum.each(fields_not_empty(changes), fn change_type ->
+          case change_type do
+            :attached ->
+              send(state.ticker, {:start_tick, entity.id, system_mod})
+            :updated ->
+              case system_mod.aspect().trigger_condition do
+                [every: t, for: _] when is_number(t) ->
+                  Process.send_after(state.ticker, {:tick, entity.id, system_mod}, t)
+                _ ->
+                  send(state.ticker, {:tick, entity.id, system_mod})
+              end
+            :removed ->
+              send(state.ticker, {:stop_tick, entity.id, system_mod})
           end
-        [:removed] ->
-          send(state.ticker, {:stop_tick, entity.id, system_mod})
-        [] -> nil
-        any ->
-          Logger.error(inspect(any))
-          Logger.error(inspect(changes))
-          raise "Consumer: unexpected multi_type changes"
+        end)
       end
     end)
     {:noreply, [], state}
@@ -108,27 +99,32 @@ defmodule Ecstatic.EventConsumer do
 
   defp valid_condition?(entity, changes) do
     fn system_m ->
-      case Map.get(system_m.aspect(), :trigger_condition, nil) do
-        nil ->
-          raise "Event_consumer: the system " <> to_string(system_m) <> " has no aspect"
-        [every: _period, for: _n_times] ->
-#          Logger.debug(inspect({system_m, "matches because is non_reactive"}), pretty: true)
-#          Logger.debug(inspect(Map.get(system_m.aspect(), :trigger_condition, nil)), pretty: true)
-         true #for instance, with for: 0, the trigger should receive tick stop
+      case {Map.get(system_m.aspect(), :trigger_condition, nil)} do
+        {[every: _period, for: :stopped], _} -> false
+        {[every: _period, for: 0], _} -> false
+        {[every: _period, for: ticks_left], cause} ->
+          Logger.debug(inspect({system_m, "is a valid non-reactive system"}))
+          system_m == cause
         [fun: fun, lifecycle: lifecycle] ->
-          b = detect_changes_type(changes, lifecycle)
-          |> Kernel.&&(fun.(system_m))
-        _ ->
-          raise "Event consumer: Unexpected aspect"
+          detect_changes_type(changes, lifecycle) &&
+          fun.(system_m, entity, changes)
+        _ -> false
       end
     end
   end
 
+  #this filter
+  defp discard_non_reactive_on_updated(changes) do
+    fn system_m ->
+
+    end
+  end
+
   defp detect_changes_type(changes, lifecycle) do
-    s=MapSet.new()
-    |> detect_changes_type(changes, :attached)
-    |> detect_changes_type(changes, :updated)
-    |> detect_changes_type(changes, :removed)
+    [:attached, :updated, :removed]
+    |> Enum.reduce(MapSet.new(), fn type, set ->
+      detect_changes_type(set, changes, type)
+    end)
     |> MapSet.intersection(MapSet.new([lifecycle]))
     |> Kernel.!=(MapSet.new())
   end

@@ -1,7 +1,8 @@
 defmodule Ecstatic.Changes do
   defstruct attached: [],
             updated: [],
-            removed: []
+            removed: [],
+            caused_by: []
 
   @type attached_component :: atom() | Ecstatic.Component.t()
   @type updated_component :: {Ecstatic.Component.t(),Ecstatic.Component.t()} | Ecstatic.Component.t()
@@ -10,6 +11,7 @@ defmodule Ecstatic.Changes do
   @type t :: %Ecstatic.Changes{
           attached: [attached_component],
           updated: [updated_component],
-          removed: [atom()]
+          removed: [atom()],
+          caused_by: [module()]
         }
 end
