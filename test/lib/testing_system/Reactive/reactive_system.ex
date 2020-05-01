@@ -7,12 +7,14 @@ defmodule Test.TestingSystem.ReactiveSystem do
 
   @impl true
   def aspect do
-    %Ecstatic.Aspect{with: [OneComponent]}
+    %Ecstatic.Aspect{with: [OneComponent], trigger_condition: [
+                                              fun: fn system_m -> system_m != __MODULE__ end,
+                                              lifecycle: :updated]}
   end
 
   @impl true
   def dispatch(entity, _changes, _delta \\ 0) do
-    Logger.debug(inspect({"Reactive system has been summoned"}))
+    Logger.debug(inspect({"Reactive system running dispatch"}))
     pid = Application.get_env(:ecstatic, :test_pid) #spy
     c = Entity.find_component(entity, OneComponent)
         |> OneComponent.x10()

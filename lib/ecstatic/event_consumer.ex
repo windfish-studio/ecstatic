@@ -41,12 +41,12 @@ defmodule Ecstatic.EventConsumer do
     f_components = valid_components?(changes)
     f_cond = valid_condition?(entity, changes)
 
-    Logger.debug(inspect({"consumer, possible systems: ", systems, changes}, pretty: true))
+#    Logger.debug(inspect({"consumer, possible systems: ", systems, changes}, pretty: true))
 
     systems = systems
     |> Enum.filter(f_components) #discard systems with wrong components
-    Logger.debug(inspect({"consumer, filtered systems by components: ", systems}))
-    systems = systems
+#    Logger.debug(inspect({"consumer, filtered systems by components: ", systems}))
+#    systems = systems
     |> Enum.filter(f_cond)
 
     Logger.debug(inspect({"consumer, filtered systems: ", systems}))
@@ -78,15 +78,25 @@ defmodule Ecstatic.EventConsumer do
   end
 
   def valid_components?(changes) do
+    components_detected = reduce_changes(changes)
+#    Logger.debug(inspect({"changes in these components: ", components_detected}, pretty: true))
     fn system ->
-      components = reduce_changes(changes)
-      Logger.debug(inspect({"filtered components: ", components}, pretty: true))
+      match_with_condition =
       Enum.all?(system.aspect().with, fn component ->
-        Enum.any?(components, fn c -> component == c end)
+#        Logger.debug(inspect({"is this component", component, "in?", system}, pretty: true))
+        Enum.any?(components_detected, fn c -> component == c end)
+#        Logger.debug(inspect(b, pretty: true))
       end)
-      |> Kernel.&&(Enum.any?(system.aspect().without, fn component ->
-        Enum.all?(components, fn c -> component == c end)
+#      Logger.debug(inspect({"match this system with cond", system, "?", match_with_condition}, pretty: true))
+
+      match_without_condition =
+      system.aspect().without == [] ||
+      (Enum.any?(system.aspect().without, fn component ->
+        Enum.any?(components_detected, fn c -> component == c end)
       end))
+      |> Kernel.&&(match_with_condition)
+#      Logger.debug(inspect({"match this system without cond", system, "?", match_without_condition}, pretty: true))
+#      match_without_condition
     end
   end
 
@@ -102,23 +112,24 @@ defmodule Ecstatic.EventConsumer do
         nil ->
           raise "Event_consumer: the system " <> to_string(system_m) <> " has no aspect"
         [every: _period, for: _n_times] ->
-          Logger.debug("the system on top matches because is non_reactive")
+#          Logger.debug(inspect({system_m, "matches because is non_reactive"}), pretty: true)
+#          Logger.debug(inspect(Map.get(system_m.aspect(), :trigger_condition, nil)), pretty: true)
          true #for instance, with for: 0, the trigger should receive tick stop
         [fun: fun, lifecycle: lifecycle] ->
           b = detect_changes_type(changes, lifecycle)
-          |> Kernel.&&(fun)
+          |> Kernel.&&(fun.(system_m))
         _ ->
-          raise "Unexpected aspect"
+          raise "Event consumer: Unexpected aspect"
       end
     end
   end
 
   defp detect_changes_type(changes, lifecycle) do
-    MapSet.new()
+    s=MapSet.new()
     |> detect_changes_type(changes, :attached)
     |> detect_changes_type(changes, :updated)
     |> detect_changes_type(changes, :removed)
-    |> MapSet.intersection(lifecycle)
+    |> MapSet.intersection(MapSet.new([lifecycle]))
     |> Kernel.!=(MapSet.new())
   end
 
@@ -136,8 +147,9 @@ defmodule Ecstatic.EventConsumer do
   end
 
   defp detect_changes_type(set, changes, field) do
-    if Map.get(changes, field) != [] do
-      MapSet.put(set, field)
+    case Map.get(changes, field) do
+      [] -> set
+      _ -> MapSet.put(set, field)
     end
   end
 

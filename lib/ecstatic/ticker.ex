@@ -45,22 +45,17 @@ defmodule Ecstatic.Ticker do
   end
 
   def handle_info({:tick, e_id, system}, state) do
-    case Map.get(state.ticks_left, system, nil) do  #this nil will trigger an error on purpose
-      t_left 
-        when t_left == :infinity 
-        when (is_number(t_left) and t_left > 0) ->
-          entity = Ecstatic.Store.Ets.get_entity(e_id)
-          t = get_time()
-          delta = delta(state, system, t)
-          state = update_last_tick_time(state, system, t)
-          system.process(entity, %Ecstatic.Changes{}, delta)
-          case t_left do 
-            :infinity -> {:noreply, state}
-            _ -> {:noreply, update_ticks_left(state, system, (t_left - 1))}
-          end
+    case Map.get(state.ticks_left, system, nil) do  #this nil means, the system is reactive
       0 ->
         {:noreply, update_ticks_left(state, system, :stopped)}
-      :stopped -> 
+      :stopped ->
+        {:noreply, state}
+      _ ->
+        entity = Ecstatic.Store.Ets.get_entity(e_id)
+        t = get_time()
+        delta = delta(state, system, t)
+        state = update_last_tick_time(state, system, t)
+        system.process(entity, %Ecstatic.Changes{}, delta)
         {:noreply, state}
     end
   end
