@@ -144,9 +144,9 @@ defmodule SystemTest do
       assert_tick_0(OneSystem)
       assert_receive {DefaultSystem, {_entity, %{updated: [ {%{state: %{var: 1}}, %{state: %{var: 2}} }] }}}, 50
       refute_receive {_system, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 850
-      assert_receive {OneSystem, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 150
+      assert_receive {OneSystem, {_entity, %{updated: [ {%{state: %{var: 2}}, %{state: %{var: 3}} }] }}}, 200
       refute_receive {_system, {_entity, %{updated: [ {%{state: %{var: 3}}, %{state: %{var: 4}} }] }}}, 850
-      assert_receive {OneSystem, {_entity, %{updated: [ {%{state: %{var: 3}}, %{state: %{var: 4}} }] }}}, 150
+      assert_receive {OneSystem, {_entity, %{updated: [ {%{state: %{var: 3}}, %{state: %{var: 4}} }] }}}, 200
     end
   end
 

@@ -41,7 +41,6 @@ defmodule Ecstatic.EventConsumer do
     systems = Enum.filter(systems, valid_components?(changes)) #discard systems with wrong components
     changes = merge_changes(entity, changes)  #cannot reduce complex changes in valid_components
     systems = Enum.filter(systems, valid_condition?(entity, changes))
-    |> Enum.filter(discard_non_reactive_on_updated(changes))
     Logger.debug(inspect({"consumer, filtered systems: ", systems}))
     new_entity = Entity.apply_changes(entity, changes)
     Enum.each(systems, fn system_mod ->
@@ -70,15 +69,11 @@ defmodule Ecstatic.EventConsumer do
 
   def valid_components?(changes) do
     components_detected = reduce_changes(changes)
-#    Logger.debug(inspect({"changes in these components: ", components_detected}, pretty: true))
     fn system ->
       match_with_condition =
       Enum.all?(system.aspect().with, fn component ->
-#        Logger.debug(inspect({"is this component", component, "in?", system}, pretty: true))
         Enum.any?(components_detected, fn c -> component == c end)
-#        Logger.debug(inspect(b, pretty: true))
       end)
-#      Logger.debug(inspect({"match this system with cond", system, "?", match_with_condition}, pretty: true))
 
       match_without_condition =
       system.aspect().without == [] ||
@@ -99,24 +94,21 @@ defmodule Ecstatic.EventConsumer do
 
   defp valid_condition?(entity, changes) do
     fn system_m ->
-      case {Map.get(system_m.aspect(), :trigger_condition, nil)} do
-        {[every: _period, for: :stopped], _} -> false
-        {[every: _period, for: 0], _} -> false
-        {[every: _period, for: ticks_left], cause} ->
-          Logger.debug(inspect({system_m, "is a valid non-reactive system"}))
-          system_m == cause
-        [fun: fun, lifecycle: lifecycle] ->
+      Logger.debug(inspect(system_m.aspect().trigger_condition))
+      Logger.debug(inspect(system_m))
+      Logger.debug(inspect(changes.caused_by))
+      case {system_m.aspect().trigger_condition, {changes.caused_by, changes.updated}} do
+        {[every: _period, for: :stopped], {_, _}} -> false
+        {[every: _period, for: 0], {_, _}} -> false
+        {[every: _period, for: _ticks_left], {^system_m, _}} -> true
+        {[every: _period, for: _ticks_left], {_, []}} -> true
+        {[every: _, for: _], {_, _}} -> false
+
+        {[fun: fun, lifecycle: lifecycle], _} ->
           detect_changes_type(changes, lifecycle) &&
           fun.(system_m, entity, changes)
-        _ -> false
+        _ -> raise "consumer.valid_condition: system_m not expected"
       end
-    end
-  end
-
-  #this filter
-  defp discard_non_reactive_on_updated(changes) do
-    fn system_m ->
-
     end
   end
 
@@ -157,6 +149,7 @@ defmodule Ecstatic.EventConsumer do
             fn old_c -> old_c.id == new_c.id end)
           {old_c, new_c}
       end)
-    %Changes{attached: new_changes.attached, updated: changes_updated, removed: new_changes.removed}
+    %Changes{attached: new_changes.attached, updated: changes_updated, removed: new_changes.removed,
+              caused_by: new_changes.caused_by}
   end
 end
