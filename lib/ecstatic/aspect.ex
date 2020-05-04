@@ -13,7 +13,7 @@ defmodule Ecstatic.Aspect do
   @type changes_types :: :attached | :removed | :updated
   @type lifecycle_hook :: MapSet.t(changes_types())
   @type react_fun :: (System.t(), Entity.t(), Changes.t() -> boolean())
-  @type react_specs :: [fun: react_fun(), lifecycle: lifecycle_hook]
+  @type react_specs :: [condition: react_fun(), lifecycle: lifecycle_hook]
 
 
   @type t :: %Ecstatic.Aspect{
@@ -21,7 +21,7 @@ defmodule Ecstatic.Aspect do
                without: [Component.t()],
                trigger_condition: timer_specs | react_specs
              }
-
+  #TODO: replace fun with condition
   @spec new([Component.t()], [Component.t()], timer_specs | react_specs) :: t()
   def new(with_components, without_components, cond)
       when is_list(without_components)
@@ -35,6 +35,6 @@ defmodule Ecstatic.Aspect do
 
   @spec is_reactive(t()) :: boolean()
   def is_reactive(aspect) do
-    Kernel.match?([fun: _, lifecycle: _], aspect.trigger_condition)
+    Kernel.match?([condition: _, lifecycle: _], aspect.trigger_condition)
   end
 end

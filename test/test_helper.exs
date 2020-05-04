@@ -24,9 +24,7 @@ defmodule TestHelper do
       timeout_time_milisec -> :time_out
     end
   end
-#  def initialize(nil) do
-#    initialize([])
-#  end
+
   def initialize(systems \\ []) do
     {:ok, pids} = start_supervisor_with_monitor([systems: systems])
     components = [Test.TestingComponent.OneComponent.new(), Test.TestingComponent.AnotherOneComponent.new()]
@@ -40,6 +38,7 @@ defmodule TestHelper do
     {:ok, consumer} = Test.TestingEventConsumer.start_link(self())  #monitor speaker
     {:ok, [supervisor, consumer]}
   end
+
   def aspect_one_sec_infinity do
     Aspect.new([Test.TestingComponent.OneComponent],[],[every: 1000, for: :infinity])
   end
@@ -50,5 +49,9 @@ defmodule TestHelper do
 
   def aspect_one_sec_five_shots do
     %Aspect{with: [Test.TestingComponent.OneComponent], trigger_condition: [every: 1000, for: 5]}
+  end
+
+  def aspect_zero do
+    Aspect.new([Test.TestingComponent.OneComponent],[],[every: :continuous, for: 0])
   end
 end

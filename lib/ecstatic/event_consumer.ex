@@ -41,7 +41,6 @@ defmodule Ecstatic.EventConsumer do
     systems = Enum.filter(systems, valid_components?(changes)) #discard systems with wrong components
     changes = merge_changes(entity, changes)  #cannot reduce complex changes in valid_components
     systems = Enum.filter(systems, valid_condition?(entity, changes))
-    Logger.debug(inspect({"consumer, filtered systems: ", systems}))
     new_entity = Entity.apply_changes(entity, changes)
     Enum.each(systems, fn system_mod ->
       if Aspect.is_reactive(system_mod.aspect()) do
@@ -81,8 +80,6 @@ defmodule Ecstatic.EventConsumer do
         Enum.any?(components_detected, fn c -> component == c end)
       end))
       |> Kernel.&&(match_with_condition)
-#      Logger.debug(inspect({"match this system without cond", system, "?", match_without_condition}, pretty: true))
-#      match_without_condition
     end
   end
 
@@ -94,9 +91,6 @@ defmodule Ecstatic.EventConsumer do
 
   defp valid_condition?(entity, changes) do
     fn system_m ->
-      Logger.debug(inspect(system_m.aspect().trigger_condition))
-      Logger.debug(inspect(system_m))
-      Logger.debug(inspect(changes.caused_by))
       case {system_m.aspect().trigger_condition, {changes.caused_by, changes.updated}} do
         {[every: _period, for: :stopped], {_, _}} -> false
         {[every: _period, for: 0], {_, _}} -> false
@@ -104,9 +98,9 @@ defmodule Ecstatic.EventConsumer do
         {[every: _period, for: _ticks_left], {_, []}} -> true
         {[every: _, for: _], {_, _}} -> false
 
-        {[fun: fun, lifecycle: lifecycle], _} ->
-          detect_changes_type(changes, lifecycle) &&
-          fun.(system_m, entity, changes)
+        {[condition: fun, lifecycle: lifecycle], _} ->
+          detect_changes_type(changes, lifecycle)
+          |> Kernel.&&(fun.(changes.caused_by, entity, changes))
         _ -> raise "consumer.valid_condition: system_m not expected"
       end
     end
@@ -117,7 +111,7 @@ defmodule Ecstatic.EventConsumer do
     |> Enum.reduce(MapSet.new(), fn type, set ->
       detect_changes_type(set, changes, type)
     end)
-    |> MapSet.intersection(MapSet.new([lifecycle]))
+    |> MapSet.intersection(MapSet.new(lifecycle))
     |> Kernel.!=(MapSet.new())
   end
 
