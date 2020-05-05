@@ -56,7 +56,7 @@ defmodule Ecstatic.Ticker do
     new_time - Map.get(state.last_tick_time, system, new_time)
   end
 
-  def handle_info({:tick, e_id, system_mod}, nil) do
+  def handle_info({:tick, _e_id, _system_mod}, nil) do
     {:noreply, nil}
   end
 

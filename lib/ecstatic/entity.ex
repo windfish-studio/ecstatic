@@ -7,14 +7,15 @@ defmodule Ecstatic.Entity do
     Changes,
     Store
   }
-  defstruct [:id, components: []]
+  defstruct [:id, :consumer_pid, components: []]
 
   @type id :: String.t()
   @type uninitialized_component :: atom()
   @type components :: list(Component.t())
   @type t :: %Entity{
           id: String.t(),
-          components: components
+          components: components,
+          consumer_pid: pid()
         }
 
   defmacro __using__(_options) do
@@ -43,7 +44,8 @@ defmodule Ecstatic.Entity do
   @spec new([Ecstatic.Component.t()]) :: t
   def new(components) when is_list(components) do
     entity = %Entity{id: id()}
-    Ecstatic.EventConsumer.start_link(entity)
+    {:ok, consumer_pid} = Ecstatic.EventConsumer.start_link(entity)
+    entity = %{entity | consumer_pid: consumer_pid} #what happens if the consumer hasn't the pid updated? Nothing to worry apparently
     {init, non_init} = Enum.split_with(components, fn
       %Component{} -> true
                   _ -> false

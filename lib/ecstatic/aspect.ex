@@ -23,13 +23,13 @@ defmodule Ecstatic.Aspect do
              }
 
   @spec new([Component.t()], [Component.t()], timer_specs | react_specs) :: t()
-  def new(with_components, without_components, cond)
+  def new(with_components, without_components, condition)
       when is_list(without_components)
            when is_list(with_components) do
     %Ecstatic.Aspect{
       with: with_components,
       without: without_components,
-      trigger_condition: cond
+      trigger_condition: condition
     }
   end
 
