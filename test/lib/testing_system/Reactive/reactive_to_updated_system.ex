@@ -1,14 +1,15 @@
 defmodule Test.TestingSystem.Reactive.ToUpdatedSystem do
   @moduledoc false
   alias Ecstatic.Entity
-  alias Test.{TestingSystem.OneSystem, TestingComponent.OneComponent}
+  alias Test.TestingComponent.OneComponent
   use Ecstatic.System
   @impl true
   #This system reacts to every system that is not self
   def aspect do
     %Ecstatic.Aspect{with: [OneComponent], trigger_condition: [
-      condition: fn system_m, _entity, _changes ->
-                                                      system_m != __MODULE__ end,
+      condition: fn cause_systems, _entity, _changes ->
+                                              Enum.any?(cause_systems, fn s -> s != __MODULE__ end)
+                                              end,
                                               lifecycle: [:updated]]}
   end
 

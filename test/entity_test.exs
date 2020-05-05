@@ -1,6 +1,6 @@
 defmodule EntityTest do
   use ExUnit.Case, async: false
-  alias Ecstatic.{Entity, Aspect, Changes}
+  alias Ecstatic.{Entity, Changes}
   alias Test.TestingComponent.OneComponent
   alias Test.TestingEntity
   alias TestHelper

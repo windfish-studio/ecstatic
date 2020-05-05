@@ -85,12 +85,12 @@ defmodule SystemTest do
 
     
     test "new conditional aspect" do
-      aspect = Aspect.new([OneComponent, AnotherComponent],
+      aspect = Aspect.new([OneComponent, AnotherOneComponent],
                           [],
                           [condition: fn (_system, _entity,_changes) -> true end,
                           lifecycle: [:updated]])
       %Aspect{with: with, without: without, trigger_condition: [condition: fun, lifecycle: lifecycle]} = aspect
-      assert with == [OneComponent, AnotherComponent]
+      assert with == [OneComponent, AnotherOneComponent]
       assert without == []
       assert is_function(fun)
       assert lifecycle == [:updated]
@@ -139,10 +139,16 @@ defmodule SystemTest do
     
     @tag systems: [DualSystem]
     test "2 components 1 system" do
-      assert_receive {DualSystem, {_entity, %{updated:
-                                              [ {%{state: %{var: 0}}, %{state: %{var: 1}} },
-                                                {%{state: %{var: 0}}, %{state: %{var: -1}} }
-                                            ] }}}, 50
+       {DualSystem, {entity, _}} = assert_receive {DualSystem, {_entity, %{updated:
+                                [ {%{state: %{var: 0}}, %{state: %{var: 1}} },
+                                  {%{state: %{var: 0}}, %{state: %{var: -1}} }
+                              ] }}}, 50
+       TestHelper.wait_receiver(100)
+      e = Store.Ets.get_entity(entity.id)
+      c1 = Entity.find_component(e, OneComponent)
+      c2 = Entity.find_component(e, AnotherOneComponent)
+      assert c1.state.var == 1
+      assert c2.state.var == -1
     end
 
     
@@ -243,5 +249,4 @@ defmodule SystemTest do
   end
 
   #TODO: a system that makes changes to another entity. For instance, Entity TANK destroys Entity HOME
-  #TODO: what happens with a changes removed and a system
 end

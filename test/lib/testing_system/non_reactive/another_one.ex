@@ -6,7 +6,7 @@ defmodule Test.TestingSystem.AnotherOneSystem do
 
   @impl true
   def aspect do
-    Ecstatic.Aspect.new(with: [], without: [])
+    %Ecstatic.Aspect{}
   end
 
   @impl true

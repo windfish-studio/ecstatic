@@ -1,7 +1,8 @@
 defmodule Ecstatic.System do
-  alias Ecstatic.{Aspect, Changes, Entity, Store.Aspect}
+  alias Ecstatic.{Aspect, Changes, Entity}
+  @type t :: module()
   @type optional_change :: Changes.t() | nil
-  @callback aspect() :: Aspect.t()
+  @callback aspect() :: Aspect.t
   @callback dispatch(Entity.t(), optional_change, delta :: number()) :: Changes.t()
   @doc false
   defmacro __using__(_options) do
@@ -19,14 +20,8 @@ defmodule Ecstatic.System do
 
       @spec do_process(Entity.t(), dispatch_fun()) :: event_push()
       defp do_process(entity, function) do
-        #TODO: is this match_aspect? really necessary?
-        changes =
-#          if Entity.match_aspect?(entity, aspect()) do
-            function.()
-#          else
-#            %Changes{}
-#          end
-        changes = %{changes | caused_by: __MODULE__}
+        changes = function.()
+        changes = %{changes | caused_by: changes.caused_by ++ [__MODULE__]}
         event = {entity, changes}
         EventSource.push(event)
       end

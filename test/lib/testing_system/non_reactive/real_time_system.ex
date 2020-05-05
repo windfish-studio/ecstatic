@@ -1,12 +1,12 @@
 defmodule Test.TestingSystem.RealTimeSystem do
   @moduledoc false
   alias Ecstatic.Entity
-  alias Test.TestingComponent.{OneComponent, AnotherOneComponent}
+  alias Test.TestingComponent.OneComponent
   use Ecstatic.System
 
   @impl true
   def aspect() do
-    TestHelper.aspect_real_time()
+    Aspect.new([Test.TestingComponent.OneComponent],[],[every: :continuous, for: :infinity])
   end
 
   @impl true

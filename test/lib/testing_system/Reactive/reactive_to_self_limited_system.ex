@@ -1,16 +1,17 @@
 defmodule Test.TestingSystem.Reactive.ToSelfLimitedSystem do
   @moduledoc false
   alias Ecstatic.Entity
-  alias Test.{TestingSystem.OneSystem, TestingComponent.OneComponent}
+  alias Test.TestingComponent.OneComponent
   use Ecstatic.System
 
   @impl true
   #This system reacts to every system that is not self
   def aspect do
-    aspect = %Ecstatic.Aspect{with: [OneComponent], trigger_condition: [
-      condition: fn system_m, _entity, changes ->
-                    case {system_m, changes.attached, changes.updated} do
-                      {__MODULE__, _, [{_,new}]} -> new.state.var < 10
+    %Ecstatic.Aspect{with: [OneComponent], trigger_condition: [
+      condition: fn cause_systems, _entity, changes ->
+                    is_this_system = Enum.any?(cause_systems, fn s -> s == __MODULE__ end)
+                    case {is_this_system, changes.attached, changes.updated} do
+                      {true, _, [{_,new}]} -> new.state.var < 10
                       {_, attached, []} ->
                         attached
                         |> Enum.filter(fn c -> c.type == OneComponent end)

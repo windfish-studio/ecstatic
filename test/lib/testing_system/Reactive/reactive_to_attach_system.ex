@@ -1,7 +1,7 @@
 defmodule Test.TestingSystem.Reactive.ToAttachSystem do
   @moduledoc false
   alias Ecstatic.Entity
-  alias Test.{TestingSystem.OneSystem, TestingComponent.OneComponent}
+  alias Test.TestingComponent.OneComponent
   use Ecstatic.System
 
   @impl true

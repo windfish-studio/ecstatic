@@ -71,7 +71,7 @@ defmodule Ecstatic.Entity do
   end
 
   @doc "Checks if an entity matches an aspect"
-  @spec match_aspect?(t, Aspect.t()) :: boolean
+  @spec match_aspect?(t, Aspect.t) :: boolean
   def match_aspect?(entity, aspect) do
     Enum.all?(aspect.with, &has_component?(entity, &1)) &&
       !Enum.any?(aspect.without, &has_component?(entity, &1))

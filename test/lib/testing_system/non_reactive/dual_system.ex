@@ -6,7 +6,7 @@ defmodule Test.TestingSystem.DualSystem do
 
   @impl true
   def aspect() do
-    TestHelper.aspect_one_sec_infinity()
+    Aspect.new([Test.TestingComponent.OneComponent],[],[every: 1000, for: :infinity])
   end
 
   @impl true
@@ -15,7 +15,7 @@ defmodule Test.TestingSystem.DualSystem do
     c = Entity.find_component(entity, OneComponent)
         |> OneComponent.inc()
         |> OneComponent.frequency(delta)
-    c2 = Entity.find_component(entity, OneComponent)
+    c2 = Entity.find_component(entity, AnotherOneComponent)
          |> AnotherOneComponent.dec()
     changes = %Changes{updated: [
                          {Entity.find_component(entity,OneComponent), c},

@@ -74,7 +74,7 @@ defmodule Ecstatic.EventConsumer do
         Enum.any?(components_detected, fn c -> component == c end)
       end)
 
-      match_without_condition =
+#      match_without_condition =
       system.aspect().without == [] ||
       (Enum.any?(system.aspect().without, fn component ->
         Enum.any?(components_detected, fn c -> component == c end)
@@ -91,10 +91,11 @@ defmodule Ecstatic.EventConsumer do
 
   defp valid_condition?(entity, changes) do
     fn system_m ->
-      case {system_m.aspect().trigger_condition, {changes.caused_by, changes.updated}} do
+      is_caused_by_system_m = Enum.any?(changes.caused_by, fn s -> s == system_m end)
+      case {system_m.aspect().trigger_condition, {is_caused_by_system_m, changes.updated}} do
         {[every: _period, for: :stopped], {_, _}} -> false
         {[every: _period, for: 0], {_, _}} -> false
-        {[every: _period, for: _ticks_left], {^system_m, _}} -> true
+        {[every: _period, for: _ticks_left], {true, _}} -> true
         {[every: _period, for: _ticks_left], {_, []}} -> true
         {[every: _, for: _], {_, _}} -> false
 

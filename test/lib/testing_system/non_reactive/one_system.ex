@@ -1,12 +1,12 @@
 defmodule Test.TestingSystem.OneSystem do
   @moduledoc false
   alias Ecstatic.Entity
-  alias Test.TestingComponent.{OneComponent, AnotherOneComponent}
+  alias Test.TestingComponent.OneComponent
   use Ecstatic.System
 
   @impl true
   def aspect() do
-    TestHelper.aspect_one_sec_infinity()
+    Aspect.new([Test.TestingComponent.OneComponent],[],[every: 1000, for: :infinity])
   end
 
   @impl true

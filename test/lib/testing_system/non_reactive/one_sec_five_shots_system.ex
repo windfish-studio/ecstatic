@@ -1,12 +1,12 @@
 defmodule Test.TestingSystem.OneSecFiveShotsSystem do
   @moduledoc false
   alias Ecstatic.Entity
-  alias Test.TestingComponent.{OneComponent, AnotherOneComponent}
+  alias Test.TestingComponent.OneComponent
   use Ecstatic.System
 
   @impl true
   def aspect() do
-    TestHelper.aspect_one_sec_five_shots()
+    %Aspect{with: [Test.TestingComponent.OneComponent], trigger_condition: [every: 1000, for: 5]}
   end
 
   @impl true

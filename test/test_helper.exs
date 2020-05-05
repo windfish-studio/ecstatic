@@ -1,17 +1,9 @@
 ExUnit.start()
 defmodule TestHelper do
   alias Ecstatic.Aspect
-  #UUID.info does the same. Replace usages by this one
   def ecs_id?(string) do
-    bool = String.length(string) == 36 &&
-    String.at(string,8) == "-" &&
-    String.at(string,13) == "-" &&
-    String.at(string,18) == "-" &&
-    String.at(string,23) == "-"
-    string = String.replace(string, "-", "")
-    bool &&
-    String.length(string) == 32 &&
-    String.match?(string,~r/^[[:xdigit:][:lower:]]+$/)
+    {res,_} = UUID.info(string)
+    res == :ok
   end
 
   def wait_receiver() do
