@@ -253,14 +253,10 @@ defmodule SystemTest do
       assert_receive {AnotherOneSystem, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: -1}} }] }}}, 50
 #      assert_receive {Destroyer, {_entity, %{removed: [%{state: %{var: -1}}]}}}, 150
       old_entity = Store.Ets.get_entity(entity_id)
-      consumer_pid = old_entity.consumer_pid
-      Process.sleep(1020)
+      TestHelper.wait_receiver()
       assert Store.Ets.get_entity(entity_id) == nil
-      #TODO: check processes asociated with this entity
-      m = Process.info(consumer_pid)
-      require Logger
-      Logger.debug(inspect(m))
-      assert Process.alive?(consumer_pid) == false
+      #TODO: check processes ticker is also dead
+      assert Process.alive?(old_entity.consumer_pid) == false
     end
   end
 

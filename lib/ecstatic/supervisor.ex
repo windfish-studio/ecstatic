@@ -10,11 +10,11 @@ defmodule Ecstatic.Supervisor do
 
   def init(arg) do
     children = [
+      {Registry, [keys: :unique, name: MySpecificRegistry]},
       {Ecstatic.EntityManager, []},
       {Ecstatic.Store.Ets, []},
       {Ecstatic.EventSource, []},
       {Ecstatic.EventProducer, []}
-
     ]
     Keyword.get(arg, :systems, [])
     |> Ecstatic.Store.System.new()

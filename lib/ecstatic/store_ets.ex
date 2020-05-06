@@ -14,8 +14,6 @@ defmodule Ecstatic.Store.Ets do
 
   @impl true
   def save_entity(entity) do
-    require Logger
-    Logger.debug(inspect("saving_entity"))
     GenServer.call(__MODULE__, {:save_entity, entity})
   end
 

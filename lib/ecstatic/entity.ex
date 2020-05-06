@@ -67,6 +67,11 @@ defmodule Ecstatic.Entity do
     entity
   end
 
+  @spec change(Entity.t, Changes.t) :: no_return
+  def change(entity, changes) do
+    EventSource.push({entity, changes})
+  end
+
   @doc "Checks if an entity matches an aspect"
   @spec match_aspect?(t, Aspect.t) :: boolean
   def match_aspect?(entity, aspect) do

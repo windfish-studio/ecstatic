@@ -6,10 +6,7 @@ defmodule TestHelper do
     res == :ok
   end
 
-  def wait_receiver() do
-    wait_receiver(100)
-  end
-  def wait_receiver(timeout_time_milisec) do
+  def wait_receiver(timeout_time_milisec \\ 100) do
     receive do
       {:test_event_consumer, _new, _} -> wait_receiver(timeout_time_milisec)
     after

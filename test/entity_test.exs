@@ -1,6 +1,9 @@
 defmodule EntityTest do
   use ExUnit.Case, async: false
-  alias Ecstatic.{Entity, Changes}
+  alias Ecstatic.{
+    Entity,
+    Changes,
+    Store}
   alias Test.TestingComponent.OneComponent
   alias Test.TestingEntity
   alias TestHelper
@@ -72,5 +75,17 @@ defmodule EntityTest do
     entity = Entity.apply_changes(entity, %Changes{updated: [{component,new_component}]})
     TestHelper.wait_receiver()
     assert entity.components == [new_component]
+  end
+
+  test "create and destroy" do
+    entity = TestingEntity.new()
+    TestHelper.wait_receiver()
+    entity = Store.Ets.get_entity(entity.id)
+    Entity.destroy(entity)
+    TestHelper.wait_receiver()
+    assert Store.Ets.get_entity(entity.id) == nil
+    require Logger
+    Logger.debug(inspect(entity.consumer_pid))
+    assert Process.alive?(entity.consumer_pid) == false
   end
 end

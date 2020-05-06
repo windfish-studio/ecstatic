@@ -2,11 +2,14 @@ defmodule Ecstatic.EventConsumer do
   @moduledoc false
   use GenStage
   require Logger
-
   alias Ecstatic.{Entity, Changes, Aspect}
 
   def start_link(entity) do
     GenStage.start_link(__MODULE__, entity)
+  end
+
+  def stop(a,b\\ :normal, t \\ 5000) do
+    GenStage.stop(a,b,t)
   end
 
   def init(entity) do
@@ -37,12 +40,10 @@ defmodule Ecstatic.EventConsumer do
   # I can do [event] because I only ever ask for one.
   # event => {entity, %{changed: [], new: [], deleted: []}}
   def handle_events([{entity, %Changes{} = changes} = _event], _from, %{systems: systems} = state) do
-    Logger.debug(inspect({"Possible systems", systems}, pretty: true))
     systems = Enum.filter(systems, valid_components?(changes)) #discard systems with wrong components
     changes = merge_changes(entity, changes)  #cannot reduce complex changes in valid_components
     Logger.debug(Kernel.inspect(changes, pretty: true))
     systems = Enum.filter(systems, valid_condition?(entity, changes))
-    Logger.debug(inspect({"Filtered systems", systems}, pretty: true))
     new_entity = Entity.apply_changes(entity, changes)
     Enum.each(systems, fn system_mod ->
       if Aspect.is_reactive(system_mod.aspect()) do
@@ -146,7 +147,6 @@ defmodule Ecstatic.EventConsumer do
             fn old_c -> old_c.id == new_c.id end)
           {old_c, new_c}
       end)
-    %Changes{attached: new_changes.attached, updated: changes_updated, removed: new_changes.removed,
-              caused_by: new_changes.caused_by}
+    %{new_changes | updated: changes_updated}
   end
 end
