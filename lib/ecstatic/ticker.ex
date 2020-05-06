@@ -86,7 +86,7 @@ defmodule Ecstatic.Ticker do
     end
   end
 
-  def handle_info({:stop_tick, system}, state) do
+  def handle_info({:stop_tick, _entity_id ,system}, state) do
     {:noreply, update_ticks_left(state, system, :stopped)}
   end
 end

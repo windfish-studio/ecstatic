@@ -37,10 +37,12 @@ defmodule Ecstatic.EventConsumer do
   # I can do [event] because I only ever ask for one.
   # event => {entity, %{changed: [], new: [], deleted: []}}
   def handle_events([{entity, %Changes{} = changes} = _event], _from, %{systems: systems} = state) do
-    Logger.debug(Kernel.inspect(changes, pretty: true))
+    Logger.debug(inspect({"Possible systems", systems}, pretty: true))
     systems = Enum.filter(systems, valid_components?(changes)) #discard systems with wrong components
     changes = merge_changes(entity, changes)  #cannot reduce complex changes in valid_components
+    Logger.debug(Kernel.inspect(changes, pretty: true))
     systems = Enum.filter(systems, valid_condition?(entity, changes))
+    Logger.debug(inspect({"Filtered systems", systems}, pretty: true))
     new_entity = Entity.apply_changes(entity, changes)
     Enum.each(systems, fn system_mod ->
       if Aspect.is_reactive(system_mod.aspect()) do

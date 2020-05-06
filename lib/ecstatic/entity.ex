@@ -1,6 +1,7 @@
 defmodule Ecstatic.Entity do
   alias Ecstatic.{
     Entity,
+    EntityManager,
     EventSource,
     Component,
     Aspect,
@@ -43,25 +44,19 @@ defmodule Ecstatic.Entity do
   @doc "Creates a new entity"
   @spec new([Ecstatic.Component.t()]) :: t
   def new(components) when is_list(components) do
-    entity = %Entity{id: id()}
-    {:ok, consumer_pid} = Ecstatic.EventConsumer.start_link(entity)
-    entity = %{entity | consumer_pid: consumer_pid} #what happens if the consumer hasn't the pid updated? Nothing to worry apparently
-    {init, non_init} = Enum.split_with(components, fn
-      %Component{} -> true
-                  _ -> false
-    end)
-    build(entity, Enum.concat(init, non_init))
-    Store.Ets.save_entity(entity)
+    EntityManager.create_entity(components)
+  end
+
+  @spec destroy(t) :: no_return()
+  def destroy(entity) do
+    EntityManager.destroy_entity(entity)
   end
 
   @spec build(t(), [Component.t()]) :: t()
-  defp build(%Entity{} = entity, components) do
+  def build(%Entity{} = entity, components) do
     changes = %Changes{attached: components}
-
     initialized_components = new_list_of_components(entity, changes)
-
     EventSource.push({entity, %Changes{attached: initialized_components}})
-
     %Entity{entity | components: components}
   end
 
@@ -100,7 +95,7 @@ defmodule Ecstatic.Entity do
     new_entity
   end
 
-  defp id, do: Ecstatic.ID.new()
+  def id, do: Ecstatic.ID.new()
 
   @spec new_list_of_components(t(), Changes.t()) :: [Component.t()]
   defp new_list_of_components(

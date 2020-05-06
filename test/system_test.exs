@@ -1,10 +1,10 @@
 defmodule SystemTest do
   use ExUnit.Case, async: false
   alias Test.TestingComponent.{OneComponent, AnotherOneComponent}
-  alias Test.TestingSystem.{OneSystem, NullSystem,
+  alias Test.TestingSystem.{OneSystem, NullSystem, AnotherOneSystem,
                             RealTimeSystem, OneSecFiveShotsSystem, DualSystem, DefaultSystem}
   alias Test.TestingSystem.Reactive.{ToUpdatedSystem, ToSelfSystem, ToSelfLimitedSystem, ToAttachSystem,
-    ToOtherSystem}
+    ToOtherSystem, Destroyer}
   alias Ecstatic.{Entity, Changes, Component, Store, Aspect}
   @moduletag :capture_log
 
@@ -245,6 +245,22 @@ defmodule SystemTest do
       c = Store.Ets.get_entity(entity_id)
           |> Entity.find_component(OneComponent)
       assert c.state.var == 22
+    end
+
+    @tag systems: [AnotherOneSystem, Destroyer]
+    test "Non reactive provoke reactive to destroy", context do
+      entity_id = context.entity_id
+      assert_receive {AnotherOneSystem, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: -1}} }] }}}, 50
+#      assert_receive {Destroyer, {_entity, %{removed: [%{state: %{var: -1}}]}}}, 150
+      old_entity = Store.Ets.get_entity(entity_id)
+      consumer_pid = old_entity.consumer_pid
+      Process.sleep(1020)
+      assert Store.Ets.get_entity(entity_id) == nil
+      #TODO: check processes asociated with this entity
+      m = Process.info(consumer_pid)
+      require Logger
+      Logger.debug(inspect(m))
+      assert Process.alive?(consumer_pid) == false
     end
   end
 

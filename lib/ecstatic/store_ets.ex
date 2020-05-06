@@ -14,6 +14,8 @@ defmodule Ecstatic.Store.Ets do
 
   @impl true
   def save_entity(entity) do
+    require Logger
+    Logger.debug(inspect("saving_entity"))
     GenServer.call(__MODULE__, {:save_entity, entity})
   end
 
@@ -24,8 +26,11 @@ defmodule Ecstatic.Store.Ets do
 
   @impl true
   def get_entity(id) do
-    [[entity]] = :ets.match(__MODULE__, {{:entity, id}, :"$1"})
-    entity
+    m = :ets.match(__MODULE__, {{:entity, id}, :"$1"})
+    case m do
+      [[entity]] -> entity
+      [] -> nil
+    end
   end
 
   @impl true

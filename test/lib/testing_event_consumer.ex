@@ -2,7 +2,7 @@ defmodule Test.TestingEventConsumer do
     @moduledoc false
     #This module is a monitor for testing. test_pid is the address of that particular test
     use GenStage
-    alias Ecstatic.{Entity, Changes}
+    alias Ecstatic.{Changes}
     def start_link(test_pid) do
       GenStage.start_link(__MODULE__, test_pid)
     end
@@ -18,7 +18,7 @@ defmodule Test.TestingEventConsumer do
         ]}
     end
 
-    def handle_events([{entity, %Changes{} = changes} = _event], _from, test_pid) do
+    def handle_events([{_entity, %Changes{} = changes} = _event], _from, test_pid) do
       send(test_pid, {:test_event_consumer, changes})
       {:noreply, [], test_pid}
     end
