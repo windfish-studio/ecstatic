@@ -1,13 +1,13 @@
 * Ecstatic
 
-TODO: write upgrades implemented by luisbmier as a Windfishstudio employee.
 ECStatic is an Entity-Component-Systems framework in Elixir.
+
+* Getting Started
 
 ** Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 by adding `ecstatic` to your list of dependencies in `mix.exs`:
-
 
 #+BEGIN_SRC elixir
 def deps do
@@ -21,39 +21,96 @@ be found at [https://hexdocs.pm/ecstatic](https://hexdocs.pm/ecstatic).
 
 * Vocabulary
 Here's a list of Ecstatic words; following will be an example sentence in English where we can connect each word to something meaningful for you.
-- =Component= : a collection of properties
+- =Component= : a collection of properties and specific methods
 - =Entity= : a collection of components
-- =Aspect= : a filter for entities, based on which components are and aren't on that entity
-- =System= : business logic; receives an entity and will do some work on it if the entity matches a given aspect.
-- =Watcher= : A hook that connects to a lifecycle event and will call a system if a particular predicate is matched.
+- =Aspect= : a filter for entities, based on which components are and aren't on that entity. The user can also specify running conditions.
+- =System= : business logic; receives an entity and will do some work on it if the entity matches a given aspect. What the system do is defined in the dispatch
+- =Changes= : a collection of components that had been attached, removed or updated.
 
 So if Zaphod is a 33-year-old alien who doesn't have tendonitis and plays tennis, then his stamina will go down but he won't hurt after the game.
 
 This could be written as (for example):
-There's an entity that has a "social component" with a name of "Zaphod", a "race component" with a name of "alien", and who does not have the "tendonitis component". When taken through the TennisGame "system", the entity's "physical component" will see its stamina reduced. A "watcher" will check for "physical components" with a stamina going down and pass those to a HealthSystem; if the entity matches the "aspect" of "has tendonitis component", it will add a "pain component" to the entity.
+There's an entity that has a "social component" with a name of "Zaphod", a "race component" with a name of "alien", and who does not have the "tendonitis component". When taken through the TennisGame "system", the entity's "physical component" will see its stamina reduced. An "aspect" will check for "physical components" with a stamina going down and pass those to a HealthSystem; if the entity matches the "aspect" of "has tendonitis component", it will add a "pain component" to the entity.
 
-* Code samples
+* Usage
 
+** Entity and Components
+
+Let's set the following example. Imagine that we have a human. They can get old and die, so let's say that they have Age and Mortal components:
 #+BEGIN_SRC elixir
   defmodule Human do
     use Ecstatic.Entity
     @default_components [Age, Mortal]
   end
+#+END_SRC
 
+The entity Human have been just defined. Now, we have to define its components:
+
+#+BEGIN_SRC elixir
   defmodule Age do
     use Ecstatic.Component
-    @default_value %{age: 1, life_expectancy: 80}
+    @default_state %{age: 0, life_expectancy: 80}
   end
+#+END_SRC
 
+#+BEGIN_SRC elixir
   defmodule Mortal do
     use Ecstatic.Component
-    @default_value %{mortal: true}
+    @default_state %{mortal: true}
   end
+#+END_SRC
+
+When we create a new human, by default, they will be 0 years old, mortal, with a life_expectancy of 80 years.
+
+** System
+
+A system has to be defined in two parts: the aspect and the dispatch. In our example, let's bring the spark to our little world: let's populate it:
+
+defmodule PopulateSystem do
+
+def aspect, do: %Ecstatic.Aspect{} #this is the default aspect
+
+def dispatch(_entity, _changes, _delta) do
+    Ecstatic.Changes{} #dispatch must reply this structure
+end
+
+*** Aspect
+
+The aspect declares the conditions whenever the system has to execute whatever is declared in the dispatch. These conditions are:
+- =:with= the aspect matches if the entity involved has all of these components.
+- =:without= the aspect matches if the entity has no of these components.
+- =:triggered_condition= the aspect matches if the entity or the changes match specific conditions. Let's see it:
+We can declare two types of systems: timed systems or reactive systems. It relies on how we had specified the =:triggered_condition=
+
+**** Aspect for timed systems
+Timed systems executed as the following time specification says (it's difficult to define time, right?). These kind of systems are synchronous.
+For timed systems, we have to define 2 keys:
+- =:every= this is the period time in miliseconds at the dispatch updates the changes. If we want to run the system as frequent as possible, put =:continuous= instead.
+- =:for= this is the number of times the system will dispatch. If we want to run the system forever, we can put =:infinity=, instead of a positive integer.
+Examples:
+#+BEGIN_SRC elixir
+    triggered_condition: [every: 1000, for: 3]
+    triggered_condition: [every: 1000, for: :infinity]
+    triggered_condition: [every: :continuous, for: :infinity]
+#+BEGIN_SRC elixir
+
+**** Aspect for reactive systems
+On the other hand, reactive systems are asynchronous. They will dispatch changes when conditions related with the changes itself or the entity are matching, as the user would like to define.
+#+BEGIN_SRC elixir
+    triggered_condition: [lifecycle: , condition: fn (_entity, _changes) -> true end)]
+    triggered_condition: [lifecycle: 1000, for: :infinity]
+    triggered_condition: [lifecycle: , for: :infinity]
+#+BEGIN_SRC elixir
+
+
+
+
 
   defmodule AgeSystem do
     use Ecstatic.System
 
-    def aspect, do: %Ecstatic.Aspect{with: [Age]}
+    def aspect, do: %Ecstatic.Aspect{with: [Age], trigger_condition: [every: 1000, for: :infinity]}
+    #1000 msec -> 1 year
 
     def dispatch(entity) do
       age_comp = Entity.find_component(entity, Age)
@@ -65,31 +122,15 @@ There's an entity that has a "social component" with a name of "Zaphod", a "race
   defmodule DeathOfOldAgeSystem do
     use Ecstatic.System
 
-    def aspect, do: %Ecstatic.Aspect{with: [Age, Mortal]}
+    def aspect, do: %Ecstatic.Aspect{with: [Age, Mortal], trigger_condition: [lifecycle: :updated,
+        condition: fn (_entity, changes, _delta) ->
+            age_component = changes.updated
+            age_component.age > age_component.life_expectancy &&
+            Enum.rand(10_000) > 7000
+        end]}
 
     def dispatch(entity) do
-      if Enum.rand(10_000) > 7000 do
         %Ecstatic.Changes{attached: [Dead]}
-      else
-        %Ecstatic.Changes{}
-      end
     end
   end
-
-  defmodule Watchers do
-    use Ecstatic.Watcher
-
-    watch_component Age, run: AgeSystem, every: 6_000
-    watch_component Age, run: DeathOfOldAgeSystem, when: fn(_pre, post) -> post.age > post.life_expectancy end
-  end
 #+END_SRC
-
-* TODO
-1. Stop using the =Ets= store, rely on the generic one. Let the users choose the one they want to use.
-2. Some systems (all systems?) trigger on _ASPECTS_. This means that when a new component gets added, and when a component gets removed, the entity event consumer runs the check for new systems to tick or systems to stop ticking. Also means aspects need to be able to define some particular component values (such as =%Aspect{with: [%Health{points: 0}]}=). The good news is that this should simplify some watchers. Although that also means I kinda-sorta lose my "tick hack", but that's probably a good thing.
-3. Implement an API for changing component values, so that we maintain the abstraction of the "state" key holding the values
-4. Can an Aspect represent a change in a component as well? This would finish simplifying the watchers...
-5. Do we replace the default components when initializing an entity? Do I provide an API for replacing and an API for merging the passed in components and the default components?
-6. The tick should send an event to the unified log, it shouldn't just trigger a system. (wait, is this true? It would be if I did command-sourcing, buuuuuut?)
-7. Spend some time with the Commander library and seeing if it's a good fit for what I'm doing
-8. Streamline API; if all changes come through Changesets, then =Entity.add_component/2= doesn't make sense unless it returns a Changeset.
