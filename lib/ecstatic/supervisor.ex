@@ -10,7 +10,7 @@ defmodule Ecstatic.Supervisor do
 
   def init(arg) do
     children = [
-      {Registry, [keys: :unique, name: MySpecificRegistry]},
+      {Registry, [keys: :unique, name: MyRegistry]},
       {Ecstatic.EntityManager, []},
       {Ecstatic.Store.Ets, []},
       {Ecstatic.EventSource, []},

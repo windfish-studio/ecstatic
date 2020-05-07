@@ -251,12 +251,11 @@ defmodule SystemTest do
     test "Non reactive provoke reactive to destroy", context do
       entity_id = context.entity_id
       assert_receive {AnotherOneSystem, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: -1}} }] }}}, 50
-#      assert_receive {Destroyer, {_entity, %{removed: [%{state: %{var: -1}}]}}}, 150
       old_entity = Store.Ets.get_entity(entity_id)
-      TestHelper.wait_receiver()
+      TestHelper.wait_receiver(1000)
       assert Store.Ets.get_entity(entity_id) == nil
       #TODO: check processes ticker is also dead
-      assert Process.alive?(old_entity.consumer_pid) == false
+      assert TestHelper.is_registered_process_dead(entity_id)
     end
   end
 

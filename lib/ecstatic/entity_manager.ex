@@ -5,9 +5,7 @@ defmodule Ecstatic.EntityManager do
     Entity,
     EventConsumer,
     Component,
-    Store,
-    Changes,
-    EventSource}
+    Store}
 
   def start_link(arg \\ []) do
     GenServer.start_link(__MODULE__, arg, [name: __MODULE__])
@@ -20,7 +18,7 @@ defmodule Ecstatic.EntityManager do
   def handle_call({:create, components}, _from, state) do
     entity = %Entity{id: Entity.id()}
     {:ok, consumer_pid} = EventConsumer.start_link(entity)
-    entity = %{entity | consumer_pid: consumer_pid}
+    Registry.register(MyRegistry, entity.id, consumer_pid)
     {init, non_init} = Enum.split_with(components, fn
       %Component{} -> true
       _ -> false
@@ -31,10 +29,10 @@ defmodule Ecstatic.EntityManager do
   end
 
   def handle_cast({:destroy, entity}, state) do
-    cPid= entity.consumer_pid
+    [{_, consumer_pid}] = Registry.lookup(MyRegistry, entity.id)
     Store.Ets.delete_entity(entity.id)
-    Process.unlink(cPid)
-    EventConsumer.stop(cPid)
+    Process.unlink(consumer_pid)
+    EventConsumer.stop(consumer_pid)
     {:noreply, state}
   end
 

@@ -43,4 +43,13 @@ defmodule TestHelper do
   def aspect_zero do
     Aspect.new([Test.TestingComponent.OneComponent],[],[every: :continuous, for: 0])
   end
+
+  def is_registered_process_alive(entity_id) do
+    [{_,pid}] = Registry.lookup(MyRegistry, entity_id)
+    Process.alive?(pid)
+  end
+
+  def is_registered_process_dead(entity_id) do
+    !is_registered_process_alive(entity_id)
+  end
 end

@@ -84,8 +84,6 @@ defmodule EntityTest do
     Entity.destroy(entity)
     TestHelper.wait_receiver()
     assert Store.Ets.get_entity(entity.id) == nil
-    require Logger
-    Logger.debug(inspect(entity.consumer_pid))
-    assert Process.alive?(entity.consumer_pid) == false
+    assert TestHelper.is_registered_process_dead(entity.id)
   end
 end

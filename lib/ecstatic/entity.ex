@@ -8,15 +8,14 @@ defmodule Ecstatic.Entity do
     Changes,
     Store
   }
-  defstruct [:id, :consumer_pid, components: []]
+  defstruct [:id, components: []]
 
   @type id :: String.t()
   @type uninitialized_component :: atom()
   @type components :: list(Component.t())
   @type t :: %Entity{
           id: String.t(),
-          components: components,
-          consumer_pid: pid()
+          components: components
         }
 
   defmacro __using__(_options) do
