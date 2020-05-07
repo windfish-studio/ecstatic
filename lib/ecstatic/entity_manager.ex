@@ -30,9 +30,9 @@ defmodule Ecstatic.EntityManager do
 
   def handle_cast({:destroy, entity}, state) do
     [{_, consumer_pid}] = Registry.lookup(MyRegistry, entity.id)
-    Store.Ets.delete_entity(entity.id)
     Process.unlink(consumer_pid)
     EventConsumer.stop(consumer_pid)
+    Store.Ets.delete_entity(entity.id)
     {:noreply, state}
   end
 

@@ -45,9 +45,6 @@ defmodule TestHelper do
   end
 
   def is_registered_process_alive(key_registry) do
-#    require Logger
-#    Logger.debug(inspect(key_registry))
-#    Logger.debug(inspect(Registry.lookup(MyRegistry, key_registry)))
     case Registry.lookup(MyRegistry, key_registry) do
       [{_,pid}] -> Process.alive?(pid)
       [] -> false

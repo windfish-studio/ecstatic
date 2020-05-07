@@ -46,9 +46,10 @@ defmodule Ecstatic.Entity do
     EntityManager.create_entity(components)
   end
 
-  @spec destroy(t) :: no_return()
+  @spec destroy(t()) :: no_return()
   def destroy(entity) do
     EntityManager.destroy_entity(entity)
+    nil
   end
 
   @spec build(t(), [Component.t()]) :: t()
@@ -93,14 +94,10 @@ defmodule Ecstatic.Entity do
 
   @spec apply_changes(t(), Changes.t()) :: t() | nil
   def apply_changes(entity, changes) do
-    if changes.attached == [] && changes.updated == [] do
-      nil
-    else
       new_comps = new_list_of_components(entity, changes)
       new_entity = %Entity{entity | components: new_comps}
       Store.Ets.save_entity(new_entity)
       new_entity
-    end
   end
 
   def id, do: Ecstatic.ID.new()
