@@ -1,5 +1,6 @@
 * Ecstatic
 
+TODO: write upgrades implemented by luisbmier as a Windfishstudio employee.
 ECStatic is an Entity-Component-Systems framework in Elixir.
 
 ** Installation
