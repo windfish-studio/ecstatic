@@ -1,6 +1,7 @@
 defmodule Ecstatic.Store.Ets do
   @behaviour Ecstatic.Store
   use GenServer
+  require Logger
 
   def start_link(opts \\ %{}) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
@@ -14,11 +15,13 @@ defmodule Ecstatic.Store.Ets do
 
   @impl true
   def save_entity(entity) do
+    Logger.debug("Saving entity in ETS")
     GenServer.call(__MODULE__, {:save_entity, entity})
   end
 
   @impl true
   def delete_entity(id) do
+    Logger.debug("Destroying entity in ETS")
     GenServer.cast(__MODULE__, {:delete_entity, id})
   end
 

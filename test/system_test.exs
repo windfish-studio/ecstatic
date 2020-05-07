@@ -250,12 +250,14 @@ defmodule SystemTest do
     @tag systems: [AnotherOneSystem, Destroyer]
     test "Non reactive provoke reactive to destroy", context do
       entity_id = context.entity_id
+      [{_,consumer_pid}] = Registry.lookup(MyRegistry, entity_id)
+      assert TestHelper.is_registered_process_alive(entity_id)
+      assert TestHelper.is_registered_process_alive(consumer_pid)
       assert_receive {AnotherOneSystem, {_entity, %{updated: [ {%{state: %{var: 0}}, %{state: %{var: -1}} }] }}}, 50
-      old_entity = Store.Ets.get_entity(entity_id)
-      TestHelper.wait_receiver(1000)
+      TestHelper.wait_receiver()
       assert Store.Ets.get_entity(entity_id) == nil
-      #TODO: check processes ticker is also dead
       assert TestHelper.is_registered_process_dead(entity_id)
+      assert TestHelper.is_registered_process_dead(consumer_pid)
     end
   end
 

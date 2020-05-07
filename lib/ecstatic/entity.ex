@@ -91,12 +91,16 @@ defmodule Ecstatic.Entity do
     Enum.find(entity.components, &(&1.type == component))
   end
 
-  @spec apply_changes(t(), Changes.t()) :: t()
+  @spec apply_changes(t(), Changes.t()) :: t() | nil
   def apply_changes(entity, changes) do
-    new_comps = new_list_of_components(entity, changes)
-    new_entity = %Entity{entity | components: new_comps}
-    Store.Ets.save_entity(new_entity)
-    new_entity
+    if changes.attached == [] && changes.updated == [] do
+      nil
+    else
+      new_comps = new_list_of_components(entity, changes)
+      new_entity = %Entity{entity | components: new_comps}
+      Store.Ets.save_entity(new_entity)
+      new_entity
+    end
   end
 
   def id, do: Ecstatic.ID.new()

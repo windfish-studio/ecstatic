@@ -14,10 +14,10 @@ defmodule Ecstatic.EventConsumer do
 
   def init(entity) do
     {:ok, ticker_pid} = Ecstatic.Ticker.start_link()
+    Registry.register(MyRegistry, self(), ticker_pid)
     state = %{
       systems: Ecstatic.Store.System.get_systems(),
-      entity_id: entity.id,
-      ticker: ticker_pid
+      entity_id: entity.id
     }
 
     {:consumer, state,
@@ -50,18 +50,19 @@ defmodule Ecstatic.EventConsumer do
        system_mod.process(new_entity, changes)
       else
         Enum.each(fields_not_empty(changes), fn change_type ->
+        [{_,ticker_pid}] = Registry.lookup(MyRegistry, self())
           case change_type do
             :attached ->
-              send(state.ticker, {:start_tick, entity.id, system_mod})
+              send(ticker_pid, {:start_tick, entity.id, system_mod})
             :updated ->
               case system_mod.aspect().trigger_condition do
                 [every: t, for: _] when is_number(t) ->
-                  Process.send_after(state.ticker, {:tick, entity.id, system_mod}, t)
+                  Process.send_after(ticker_pid, {:tick, entity.id, system_mod}, t)
                 _ ->
-                  send(state.ticker, {:tick, entity.id, system_mod})
+                  send(ticker_pid, {:tick, entity.id, system_mod})
               end
             :removed ->
-              send(state.ticker, {:stop_tick, entity.id, system_mod})
+              send(ticker_pid, {:stop_tick, entity.id, system_mod})
           end
         end)
       end
