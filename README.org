@@ -64,7 +64,7 @@ When we create a new human, by default, they will be 0 years old, mortal, with a
 
 ** System
 
-The system the most important module, it defines when and what to do
+The system the most important module, it defines when and what to do with the entities
 A system has to be defined in two parts: the aspect and the dispatch. Let's make out humans age and die.
 #+BEGIN_SRC elixir
     defmodule PopulateSystem do
