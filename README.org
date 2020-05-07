@@ -24,8 +24,8 @@ Here's a list of Ecstatic words; following will be an example sentence in Englis
 - =Component= : a collection of properties and specific methods
 - =Entity= : a collection of components
 - =Aspect= : a filter for entities, based on which components are and aren't on that entity. The user can also specify running conditions.
-- =System= : business logic; receives an entity and will do some work on it if the entity matches a given aspect. What the system do is defined in the dispatch
-- =Changes= : a collection of components that had been attached, removed or updated.
+- =System= : business logic; receives an entity and will do some work on it if the entity matches a given aspect. What the system do is defined its the dispatch
+- =Changes= : a collection of components that had been =:attached=, =:removed= or =:updated=.
 
 So if Zaphod is a 33-year-old alien who doesn't have tendonitis and plays tennis, then his stamina will go down but he won't hurt after the game.
 
@@ -36,7 +36,7 @@ There's an entity that has a "social component" with a name of "Zaphod", a "race
 
 ** Entity and Components
 
-Let's set the following example. Imagine that we have a human. They can get old and die, so let's say that they have Age and Mortal components:
+Let's set the following example. Imagine that we have humans. They can get old and die, so let's add them Age and Mortal components:
 #+BEGIN_SRC elixir
   defmodule Human do
     use Ecstatic.Entity
@@ -64,16 +64,19 @@ When we create a new human, by default, they will be 0 years old, mortal, with a
 
 ** System
 
-A system has to be defined in two parts: the aspect and the dispatch. In our example, let's bring the spark to our little world: let's populate it:
+The system the most important module, it defines when and what to do
+A system has to be defined in two parts: the aspect and the dispatch. Let's make out humans age and die.
+#+BEGIN_SRC elixir
+    defmodule PopulateSystem do
 
-defmodule PopulateSystem do
+    def aspect, do: %Ecstatic.Aspect{} #this is the default aspect
 
-def aspect, do: %Ecstatic.Aspect{} #this is the default aspect
+    def dispatch(_entity, _changes, _delta) do
+        Ecstatic.Changes{} #dispatch must reply this structure
+    end
+#+END_SRC
 
-def dispatch(_entity, _changes, _delta) do
-    Ecstatic.Changes{} #dispatch must reply this structure
-end
-
+We have to define now the Aspect and the dispatch
 *** Aspect
 
 The aspect declares the conditions whenever the system has to execute whatever is declared in the dispatch. These conditions are:
@@ -89,23 +92,31 @@ For timed systems, we have to define 2 keys:
 - =:for= this is the number of times the system will dispatch. If we want to run the system forever, we can put =:infinity=, instead of a positive integer.
 Examples:
 #+BEGIN_SRC elixir
-    triggered_condition: [every: 1000, for: 3]
-    triggered_condition: [every: 1000, for: :infinity]
-    triggered_condition: [every: :continuous, for: :infinity]
-#+BEGIN_SRC elixir
+    triggered_condition: [every: 1000, for: 3]  #The system will trigger 3 times: in t=0sec, t=1sec and t=2sec.
+    triggered_condition: [every: 1000, for: :infinity]  #The system will trigger 1 time per second
+    triggered_condition: [every: :continuous, for: :infinity] #The system will trigger as much as it can
+#+END_SRC
 
 **** Aspect for reactive systems
 On the other hand, reactive systems are asynchronous. They will dispatch changes when conditions related with the changes itself or the entity are matching, as the user would like to define.
+For reactive systems, we have to also define 2 keys;
+- =:lifecycle= this is the kind of changes that the system expects. It can be =:attached=, =:updated= and/or =:removed=.
+- =:condition= here the user must define a function that returns whether the condition has been matched or not.
+Examples:
 #+BEGIN_SRC elixir
-    triggered_condition: [lifecycle: , condition: fn (_entity, _changes) -> true end)]
-    triggered_condition: [lifecycle: 1000, for: :infinity]
-    triggered_condition: [lifecycle: , for: :infinity]
+    triggered_condition: [lifecycle: [:attached] , condition: fn (_entity, _changes) -> true end)] #the system will trigger everytime any of the components are added to the entity
+#+END_SRC
+In this example, the dispatch is executed when the entity has the new specific component.
+
 #+BEGIN_SRC elixir
+    triggered_condition: [lifecycle: [:updated], condition: fn (_entity, changes) ->
+     [{_old,updated_component}] = changes.updated
+     updated_component.the_variable > 0
+    end)]
+#+END_SRC
+In this example, the dispatch is executed only if the recently updated variable is positive.
 
-
-
-
-
+*** Dispatch
   defmodule AgeSystem do
     use Ecstatic.System
 
@@ -133,4 +144,16 @@ On the other hand, reactive systems are asynchronous. They will dispatch changes
         %Ecstatic.Changes{attached: [Dead]}
     end
   end
+#+END_SRC
+
+*** Usage
+Returning to our tiny world. We could define the Populate system as timed one, that creates a human every second:
+#+BEGIN_SRC elixir
+    defmodule PopulateSystem do
+
+    def aspect, do: %Ecstatic.Aspect{with:[]} #this is the default aspect
+
+    def dispatch(_entity, _changes, _delta) do
+        Ecstatic.Changes{} #dispatch must reply this structure
+    end
 #+END_SRC
