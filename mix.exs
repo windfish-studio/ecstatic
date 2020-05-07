@@ -40,8 +40,8 @@ defmodule Ecstatic.Mixfile do
 
   defp docs do
     [
-      main: "Ecstatic",
-      source_url: "https://github.com/trevoke/ecstatic"
+      main: "readme",
+      extras: ["README.md"]
     ]
   end
 

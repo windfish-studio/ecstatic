@@ -1,4 +1,8 @@
 defmodule Ecstatic.System do
+  @moduledoc """
+  define here how to use the system
+  # This is a heading
+  """
   alias Ecstatic.{Aspect, Changes, Entity}
   @type t :: module()
   @type optional_change :: Changes.t() | nil
