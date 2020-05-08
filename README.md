@@ -27,10 +27,17 @@ Here's a list of Ecstatic words; following will be an example sentence in Englis
 - `Ecstatic.System` : business logic; receives an entity and will do some work on it if the entity matches a given aspect. What the system do is defined its the dispatch
 - `Ecstatic.Changes` : a collection of components that had been `:attached`, `:removed` or `:updated`.
 
-So if Zaphod is a 33-year-old alien who doesn't have tendonitis and plays tennis, then his stamina will go down but he won't hurt after the game.
+## A "Real-World" Example
+Let's imagine the following situation: we have an entity "Zaphod", who is a 33-year-old alien. If he plays tennis and over-exerts himself, he may cause himself damage!
 
-This could be written as (for example):
-There's an entity that has a "social component" with a name of "Zaphod", a "race component" with a name of "alien", and who does not have the "tendonitis component". When taken through the TennisGame "system", the entity's "physical component" will see its stamina reduced. An "aspect" will check for "physical components" with a stamina going down and pass those to a HealthSystem; if the entity matches the "aspect" of "has tendonitis component", it will add a "pain component" to the entity.
+### How to represent this with an ECS
+
+- We create an Entity to represent our main character, Zaphod
+- We assign him a `SocialComponent` which has the attributes `:name` and `:race`, which we set to `"Zaphod"` and `:alien` respectively
+- We assign him a component `PhysicalComponent` which has the attribute `:stamina` and `:health` set to `100` by default.
+- When the `TennisGameSystem` is activated every 60 seconds, we modify Zaphod's `PhysicalComponent` and reduce his `:stamina` by some random number between 1 and 10.
+- The `OverExertionSystem` is then activated by this change in the `PhysicalComponent`; it watches if any change in `:stamina` is greater than -5. If it is, then we reduce the `:health` attribute by a proportional amount.
+- The `RestSystem` executes every 10 seconds, and replenishes Zaphod's `:stamina` by one point.
 
 # Usage
 
@@ -136,7 +143,7 @@ We had defined when our systems should act in its aspect. Now, let's define what
 
 Notice, that we have to create a implement the 'Dead' component.
 
-## Entity's lifecycle
+## Entity Lifecycle
 Where are our humans? There's nobody around. That is because we have not created any human yet. In order to do so, let's define an init function in our main process (is up to you).
 ```
 def initialization() do
@@ -144,8 +151,6 @@ def initialization() do
 end
 ```
 
-# Crap that shouldn't be here
+# TODO
 
-
-3) Todas las formas que el usuario puede usar el dispatch/2 para modificar el entity, o para modificar/borrar/añadir otros entities; 
-explicando bien los parametros que lleguen al dispatch/2
+- Añadir todas las formas que el usuario puede usar el dispatch/2 para modificar el entity, o para modificar/borrar/añadir otros entities; explicando bien los parametros que lleguen al dispatch/2
