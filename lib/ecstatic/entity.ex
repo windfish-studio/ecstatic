@@ -1,7 +1,7 @@
 defmodule Ecstatic.Entity do
   @moduledoc """
-  Entities are things in our project. They can always be described with nouns, like *Car*, *Human* or *Planet*. It's definition is really short, because it's behaviour SHOULD NOT be defined here. For that purpose we should use Ecstatic.System and Ecstatic.Component instead. That's because of Ecs philosophy. If we want to exploit the polymorphism that ECS offers us, we must keep the entity as simpler as possible.
-  ** Configuration:
+  Entities are the stuff in our project. They can always be described with nouns, like *Car*, *Human* or *Planet*. It's definition is really short, because it's behaviour SHOULD NOT be defined here. For that purpose we should use Ecstatic.System and Ecstatic.Component instead. That's because of ECS philosophy. If we want to exploit the polymorphism that ECS offers us, we must keep the entity as simpler as possible.
+  ## Configuration:
 
   Entities are mostly defined by its components. For example, we could define a human like this:
   ```
@@ -12,6 +12,16 @@ defmodule Ecstatic.Entity do
   ```
   We had added the component *Positionable* because our Human will be in a certain position in a our world. Also, we want to take into account that this human will get old, so we had also defined that they can *Age*.
 
+  ## Entity dynamics:
+  By default, we can create entities with new:
+  ```
+    Human.new()
+  ```
+  Moreover, if we want to add specific components to our Entity we could do so. For example, let's add superpowers to our Human.
+  ```
+    Human.new([Superpowerful])
+  ```
+  , where Superpowerful is an Ecstatic.Component.
   """
   alias Ecstatic.{
     Entity,
@@ -60,40 +70,34 @@ defmodule Ecstatic.Entity do
     EntityManager.create_entity(components)
   end
 
+  @doc "Destroys the entity"
   @spec destroy(t()) :: no_return()
   def destroy(entity) do
     EntityManager.destroy_entity(entity)
     nil
   end
 
-  @spec build(t(), [Component.t()]) :: t()
-  def build(%Entity{} = entity, components) do
-    changes = %Changes{attached: components}
-    initialized_components = new_list_of_components(entity, changes)
-    EventSource.push({entity, %Changes{attached: initialized_components}})
-    %Entity{entity | components: components}
-  end
-
-  @doc "Add an initialized component to an entity"
+  @doc "Add an initialized component to an entity."
   @spec add(t, Component.t()) :: t
   def add(%Entity{} = entity, %Component{} = component) do
     EventSource.push({entity, %Ecstatic.Changes{attached: [component]}})
     entity
   end
 
+  @doc "Updates the entity with the specified changes"
   @spec change(Entity.t, Changes.t) :: no_return
   def change(entity, changes) do
     EventSource.push({entity, changes})
   end
 
-  @doc "Checks if an entity matches an aspect"
+  @doc "Checks if an entity matches an aspect."
   @spec match_aspect?(t, Aspect.t) :: boolean
   def match_aspect?(entity, aspect) do
     Enum.all?(aspect.with, &has_component?(entity, &1)) &&
       !Enum.any?(aspect.without, &has_component?(entity, &1))
   end
 
-  @doc "Check if an entity has an instance of a given component"
+  @doc "Check if an entity has an instance of a given component."
   @spec has_component?(t, uninitialized_component) :: boolean
   def has_component?(entity, component) do
     entity.components
@@ -104,6 +108,14 @@ defmodule Ecstatic.Entity do
   @spec find_component(t, uninitialized_component) :: Component.t() | nil
   def find_component(entity, component) do
     Enum.find(entity.components, &(&1.type == component))
+  end
+
+  @spec build(t(), [Component.t()]) :: t()
+  def build(%Entity{} = entity, components) do
+    changes = %Changes{attached: components}
+    initialized_components = new_list_of_components(entity, changes)
+    EventSource.push({entity, %Changes{attached: initialized_components}})
+    %Entity{entity | components: components}
   end
 
   @spec apply_changes(t(), Changes.t()) :: t() | nil
