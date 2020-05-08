@@ -21,7 +21,17 @@ defmodule Ecstatic.Changes do
   end
   ```
 
-  On the other hand, when we have to define the dispatch,
+  On the other hand, when we have to define the dispatch's output, the tupple with duplicated components are no longer necessary. We must prepare the changes with the components that we had only changed.
+  Matching the condition of the example above, let's say that our dispatch has updated our components, with new_states:
+  ```
+  dispatch (_e, changes, _d) do
+    [{c1_old, c1_new}, {c2_old, c2_new}] = changes.updated
+    c1 = {c1 | state: new_state1}
+    c2 = {c2 | state: new_state2}
+    %Ecstatic.Changes{updated: [c1, c2]}
+  end
+  ```
+  Notice that we hadn't used tupples.
 
   ## Caused by
   For every change we make in our system, an instigator will be added, in order to tag which systems had made current changes.
