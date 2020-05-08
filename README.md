@@ -67,61 +67,81 @@ When we create a new human, by default, they will be 0 years old, mortal, with a
 The system the most important module, it defines when and what to do with the entities
 A system has to be defined in two parts: the aspect and the dispatch. Let's make out humans age and die.
 ```
-    defmodule PopulateSystem do
-
-    def aspect, do: %Ecstatic.Aspect{} #this is the default aspect
-
-    def dispatch(_entity, _changes, _delta) do
-        Ecstatic.Changes{} #dispatch must reply this structure
+    defmodule AgeSystem do
+        use Ecstatic.System
+        def aspect, do: %Ecstatic.Aspect{}  #this is the default aspect
+    
+        def dispatch(_entity, _changes, _delta) do
+            Ecstatic.Changes{}              #dispatch must reply this structure
+    end
+    
+    defmodule DeathOfOldAgeSystem do
+        use Ecstatic.System
+        def aspect, do: %Ecstatic.Aspect{}  #this is the default aspect
+    
+        def dispatch(_entity, _changes, _delta) do
+            Ecstatic.Changes{}              #dispatch must reply this structure
     end
 ```
 
-Now, we have to define aspect\0 and dispatch\3
+Now, we have to define aspect\0 and dispatch\3 for both systems.
+
 ### Aspect
+Let's say that 10 seconds in real life are one year in the simulation. Also, to stay simple, only entities that are going to age are those with Age component. 
+```
+defmodule AgeSystem do
+    use Ecstatic.System
+    def aspect, do: %Ecstatic.Aspect{with: [Age], trigger_condition: [every: 10000, for: :infinity]}
+end
+``` 
+
+Now, let's kill the elders!
+```
+defmodule DeathOfOldAgeSystem do
+    use Ecstatic.System
+    def aspect, do: %Ecstatic.Aspect{with: [Age], trigger_condition: [lifecycle: [:updated], 
+    condition: fn (_cause_systems, entity, _changes) -> 
+        age_component = Entity.find_component(entity, Age)
+        age = age_component.state.age
+        life_expectancy = age_component.state.life_expectancy
+        age >= life_expectancy 
+    end]}
+end
+```
+
 Please, check **Ecstatic.Aspect** documentation for more examples.
 
 ### Dispatch
-  ```
+We had defined when our systems should act in its aspect. Now, let's define what these systems are doing.
+
+```
   defmodule AgeSystem do
-    use Ecstatic.System
-
-    def aspect, do: %Ecstatic.Aspect{with: [Age], trigger_condition: [every: 1000, for: :infinity]}
-    #1000 msec -> 1 year
-
-    def dispatch(entity) do
+  use Ecstatic.System
+    def dispatch(entity, _changes) do
       age_comp = Entity.find_component(entity, Age)
       new_age_comp = %{age_comp | age: age_comp.age + 1}
       %Ecstatic.Changes{updated: [new_age_comp]}
     end
   end
-    ```
-    
+```
+
+```
   defmodule DeathOfOldAgeSystem do
-    use Ecstatic.System
-
-    def aspect, do: %Ecstatic.Aspect{with: [Age, Mortal], trigger_condition: [lifecycle: :updated,
-        condition: fn (_entity, changes, _delta) ->
-            age_component = changes.updated
-            age_component.age > age_component.life_expectancy &&
-            Enum.rand(10_000) > 7000
-        end]}
-
+  use Ecstatic.System
     def dispatch(entity) do
         %Ecstatic.Changes{attached: [Dead]}
     end
   end
 ```
 
-### Usage
-Returning to our tiny world. We could define the Populate system as timed one, that creates a human every second:
+Notice, that we have to create a implement the 'Dead' component.
+
+## Entity's lifecycle
+Where are our humans? There's nobody around. That is because we have not created any human yet. In order to do so, let's define an init function in our main process (is up to you).
 ```
-    defmodule PopulateSystem do
+def initialization() do
 
-    def aspect, do: %Ecstatic.Aspect{with:[]} #this is the default aspect
-
-    def dispatch(_entity, _changes, _delta) do
-        Ecstatic.Changes{} #dispatch must reply this structure
-    end
+end
 ```
 
 # Crap that shouldn't be here

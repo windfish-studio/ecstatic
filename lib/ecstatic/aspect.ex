@@ -60,7 +60,7 @@ defmodule Ecstatic.Aspect do
 
   2. With this condition, the dispatch is executed only if the recently updated variable is positive.
   ```
-    triggered_condition: [lifecycle: [:updated], condition: fn (_entity, changes) ->
+    triggered_condition: [lifecycle: [:updated], condition: fn (_cause_system, _entity, changes) ->
      [{_old,updated_component}] = changes.updated
      updated_component.the_variable > 0
     end)]
