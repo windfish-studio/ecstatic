@@ -1,30 +1,39 @@
 defmodule Ecstatic.Aspect do
-  @module doc """
-  Aspect defines whether the calling system should run. Here, we define:
-  - for which entities or components
-  - at which condition
+  @moduledoc """
+  # Aspect
+  The aspect is a useful filter, in order to optimize systems races. Hadn't we this filter, all systems would be running at the same time. So, its mandatory for every system to have defined an =aspect()=
+  Aspect defines whether the calling system should run. Here, can define:
+  - for which entities or components the system will run
+  - at which conditions
   - how many times or with how many frequency
-  The aspect is a useful filter, in order to optimize systems races. Hadn't we this filter, the systems would be running all at the same time
 
-  The aspect declares the conditions whenever the system has to execute whatever is declared in the dispatch. These conditions are:
-  - `:with` the aspect matches if the entity involved has all of these components.
-  - `:without` the aspect matches if the entity has no of these components.
-  - `:triggered_condition` the aspect matches if the entity or the changes match specific conditions. Let's see it:
-  We can declare two types of systems: timed systems or reactive systems. It relies on how we had specified the `:triggered_condition`
+  The aspect declares the conditions whenever the system has to execute. These conditions are:
+  - `:with`: the aspect matches if the entity involved has all of these listed components.
+  - `:without`: the aspect matches if the entity has non of these listed components.
+  - `:triggered_condition`: the aspect matches if the entity and the changes match our conditions. We have to notice that we can declare two types of systems: timed systems or reactive systems. It relies on how we had specified this key. Let's see it in depth:
 
-  #### Aspect for timed systems
-  Timed systems executed as the following time specification says (it's difficult to define time, right?). These kind of systems are synchronous.
+  ## Aspect for timed systems
+  Timed systems will be executed with the following time specifications.
   For timed systems, we have to define 2 keys:
-  - `:every` this is the period time in miliseconds at the dispatch updates the changes. If we want to run the system as frequent as possible, put `:continuous` instead.
-  - `:for` this is the number of times the system will dispatch. If we want to run the system forever, we can put `:infinity`, instead of a positive integer.
-  Examples:
+  - `:every`: this is the period time (in miliseconds) at the dispatch updates the changes. If we want to run the system as frequent as possible, put `:continuous` instead.
+  - `:for`: this is the number of times the system will dispatch. If we want to run the system forever, we can put `:infinity`, instead of a positive integer.
+
+  Three examples, of how to declare ':triggered_condition` for timed systems:
+
+  1. With this `:triggered_condition`, the system will trigger 3 times: in t=0sec, t=1sec and t=2sec.
   ```
-    triggered_condition: [every: 1000, for: 3]  #The system will trigger 3 times: in t=0sec, t=1sec and t=2sec.
-    triggered_condition: [every: 1000, for: :infinity]  #The system will trigger 1 time per second
-    triggered_condition: [every: :continuous, for: :infinity] #The system will trigger as much as it can
+    triggered_condition: [every: 1000, for: 3]
+  ```
+  2. Now, =for= has no limitations, so the system will trigger one time per second
+  ```
+    triggered_condition: [every: 1000, for: :infinity]  #The system will trigger 1 time per second.
+  ```
+  3. We could define a system that triggers as much as it can. But look out, real time systems could lead as to a bad performance.
+  ```
+    triggered_condition: [every: :continuous, for: :infinity]
   ```
 
-  #### Aspect for reactive systems
+  ## Aspect for reactive systems
   On the other hand, reactive systems are asynchronous. They will dispatch changes when conditions related with the changes itself or the entity are matching, as the user would like to define.
   For reactive systems, we have to also define 2 keys;
   - `:lifecycle` this is the kind of changes that the system expects. It can be `:attached`, `:updated` and/or `:removed`.
