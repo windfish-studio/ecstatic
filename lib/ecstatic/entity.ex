@@ -1,4 +1,18 @@
 defmodule Ecstatic.Entity do
+  @moduledoc """
+  Entities are things in our project. They can always be described with nouns, like *Car*, *Human* or *Planet*. It's definition is really short, because it's behaviour SHOULD NOT be defined here. For that purpose we should use Ecstatic.System and Ecstatic.Component instead. That's because of Ecs philosophy. If we want to exploit the polymorphism that ECS offers us, we must keep the entity as simpler as possible.
+  ** Configuration:
+
+  Entities are mostly defined by its components. For example, we could define a human like this:
+  ```
+  defmodule Human do
+    use Ecstatic.Entity
+    @default_components [Positionable, Age]
+  end
+  ```
+  We had added the component *Positionable* because our Human will be in a certain position in a our world. Also, we want to take into account that this human will get old, so we had also defined that they can *Age*.
+
+  """
   alias Ecstatic.{
     Entity,
     EntityManager,

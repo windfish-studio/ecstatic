@@ -1,4 +1,7 @@
 defmodule Ecstatic.Component do
+  @moduledoc """
+  Components are the basic piece. They are defined as behaviours, skills or functionality is needed. They are often names with abilities or adjetives, like *Positionable* or *
+"""
   alias Ecstatic.Component
   defstruct [:id, :state, :type]
 
