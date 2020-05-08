@@ -1,4 +1,5 @@
 defmodule Ecstatic.Ticker do
+  @moduledoc false
   #One for each Entity
   @type component_id :: String.t
   @type system_name :: atom()

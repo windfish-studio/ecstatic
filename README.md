@@ -76,11 +76,12 @@ A system has to be defined in two parts: the aspect and the dispatch. Let's make
     end
 ```
 
-We have to define now the Aspect and the dispatch
+Now, we have to define aspect\0 and dispatch\3
 ### Aspect
 Please, check **Ecstatic.Aspect** documentation for more examples.
 
 ### Dispatch
+  ```
   defmodule AgeSystem do
     use Ecstatic.System
 
@@ -93,7 +94,8 @@ Please, check **Ecstatic.Aspect** documentation for more examples.
       %Ecstatic.Changes{updated: [new_age_comp]}
     end
   end
-
+    ```
+    
   defmodule DeathOfOldAgeSystem do
     use Ecstatic.System
 

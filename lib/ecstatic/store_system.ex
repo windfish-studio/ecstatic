@@ -1,4 +1,5 @@
 defmodule Ecstatic.Store.System do
+  @moduledoc false
   alias Ecstatic.System
 
   @spec get_systems() :: [System.t]

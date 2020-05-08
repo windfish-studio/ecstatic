@@ -21,7 +21,7 @@ defmodule Ecstatic.Entity do
   ```
     Human.new([Superpowerful])
   ```
-  , where Superpowerful is an Ecstatic.Component.
+  > where Superpowerful is an Ecstatic.Component.
   """
   alias Ecstatic.{
     Entity,
@@ -105,11 +105,13 @@ defmodule Ecstatic.Entity do
     |> Enum.member?(component)
   end
 
+  @doc "Get the specific component from an entity"
   @spec find_component(t, uninitialized_component) :: Component.t() | nil
   def find_component(entity, component) do
     Enum.find(entity.components, &(&1.type == component))
   end
 
+  @doc false
   @spec build(t(), [Component.t()]) :: t()
   def build(%Entity{} = entity, components) do
     changes = %Changes{attached: components}
@@ -118,6 +120,7 @@ defmodule Ecstatic.Entity do
     %Entity{entity | components: components}
   end
 
+  @doc false
   @spec apply_changes(t(), Changes.t()) :: t() | nil
   def apply_changes(entity, changes) do
       new_comps = new_list_of_components(entity, changes)
@@ -128,6 +131,7 @@ defmodule Ecstatic.Entity do
 
   def id, do: Ecstatic.ID.new()
 
+  @doc false
   @spec new_list_of_components(t(), Changes.t()) :: [Component.t()]
   defp new_list_of_components(
          entity,

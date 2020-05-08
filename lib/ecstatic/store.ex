@@ -1,4 +1,5 @@
-defmodule Ecstatic.Store do 
+defmodule Ecstatic.Store do
+  @moduledoc false
   alias Ecstatic.Entity
 
   @type return_type :: {:ok, Entity.t()} | {:error, term()}

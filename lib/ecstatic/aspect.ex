@@ -103,6 +103,7 @@ defmodule Ecstatic.Aspect do
                trigger_condition: timer_specs | react_specs
              }
 
+  @doc "Another way to initialize an aspect struct"
   @spec new([Component.t()], [Component.t()], timer_specs | react_specs) :: t()
   def new(with_components, without_components, condition)
       when is_list(without_components)
@@ -114,6 +115,7 @@ defmodule Ecstatic.Aspect do
     }
   end
 
+  @doc "Checks if an aspect is reactive. Otherwise, is timed"
   @spec is_reactive(t()) :: boolean()
   def is_reactive(aspect) do
     Kernel.match?([condition: _, lifecycle: _], aspect.trigger_condition)

@@ -1,4 +1,5 @@
 defmodule Ecstatic.Store.Ets do
+  @moduledoc false
   @behaviour Ecstatic.Store
   use GenServer
 

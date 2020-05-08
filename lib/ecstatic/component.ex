@@ -35,7 +35,7 @@ defmodule Ecstatic.Component do
     end
   end
 
-  @doc "New component"
+  @doc "Create a new component."
   @spec new(component_type, state) :: t
   def new(component_type, initial_state) do
     id = Ecstatic.ID.new()
