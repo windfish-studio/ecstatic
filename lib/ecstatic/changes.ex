@@ -21,7 +21,7 @@ defmodule Ecstatic.Changes do
   end
   ```
 
-  On the other hand, when we have to define the dispatch's output, the tupple with duplicated components are no longer necessary. We must prepare the changes with the components that we had only changed.
+  On the other hand, when we have to define the dispatch's output, the tuple with duplicated components are no longer necessary. We must prepare the changes with the components that we had only changed.
   Matching the condition of the example above, let's say that our dispatch has updated our components, with new_states:
   ```
   dispatch (_e, changes, _d) do
@@ -31,10 +31,13 @@ defmodule Ecstatic.Changes do
     %Ecstatic.Changes{updated: [c1, c2]}
   end
   ```
-  Notice that we hadn't used tupples.
+  Notice that we hadn't used tuples.
 
   ## Caused by
   For every change we make in our system, an instigator will be added, in order to tag which systems had made current changes.
+
+  #The logger
+  Whenever an Entity is created or some changes has successfully dispatched by a System, the logger will register these changes for debug purposes.
 
 """
   defstruct attached: [],
