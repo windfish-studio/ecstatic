@@ -1,6 +1,7 @@
 defmodule Ecstatic.Entity do
   @moduledoc """
   Entities are the stuff in our project. They can always be described with nouns, like *Car*, *Human* or *Planet*. It's definition is really short, because it's behaviour SHOULD NOT be defined here. For that purpose we should use Ecstatic.System and Ecstatic.Component instead. That's because of ECS philosophy. If we want to exploit the polymorphism that ECS offers us, we must keep the entity as simpler as possible.
+
   ## Configuration:
 
   Entities are mostly defined by its components. For example, we could define a human like this:
@@ -22,6 +23,9 @@ defmodule Ecstatic.Entity do
     Human.new([Superpowerful])
   ```
   > where Superpowerful is an Ecstatic.Component.
+
+  ## The lifecycle of an entity
+  It's really important to know that each Entity has its own process. This process is continuously checking if any of the current systems matches each aspect. On the other hand, every time we create a new entity, update it or destroy it, the entity is being queued to be stored in a ETS. Storing and getting entities and registering changes takes some time, there are multiple processes running at the same time.
   """
   alias Ecstatic.{
     Entity,
@@ -84,7 +88,7 @@ defmodule Ecstatic.Entity do
     entity
   end
 
-  @doc "Updates the entity with the specified changes"
+  @doc "Updates the entity with the specified changes. "
   @spec change(Entity.t, Changes.t) :: no_return
   def change(entity, changes) do
     EventSource.push({entity, changes})

@@ -1,6 +1,6 @@
 defmodule Ecstatic.Changes do
   @moduledoc """
-  Changes is a struct where we can observe and define changes happened in one Ecstatic.Entity. When the user is currently defining the aspect and the system, they will recognize this structure. We mus acknowlege that Changes has two purposes:
+  Changes is a struct where we can observe and define changes happened in one Ecstatic.Entity. When the user is currently defining the aspect and the system, they will recognize this structure. We must realize that Changes has two purposes:
   1. Receiving it as a parameter to determine whether our reactive system will trigger. See Ecstatic.aspect
   2. Sending it as the expected output of any dispatch. See Ecstatic.System.dispatch\3
 

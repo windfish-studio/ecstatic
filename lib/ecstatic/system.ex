@@ -1,6 +1,5 @@
 defmodule Ecstatic.System do
   @moduledoc """
-  define here how to use the system
   # This is a heading
   """
   alias Ecstatic.{Aspect, Changes, Entity}

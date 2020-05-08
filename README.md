@@ -123,3 +123,9 @@ Returning to our tiny world. We could define the Populate system as timed one, t
         Ecstatic.Changes{} #dispatch must reply this structure
     end
 ```
+
+# Crap that shouldn't be here
+
+
+3) Todas las formas que el usuario puede usar el dispatch/2 para modificar el entity, o para modificar/borrar/añadir otros entities; 
+explicando bien los parametros que lleguen al dispatch/2
